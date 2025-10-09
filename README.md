@@ -7,7 +7,6 @@
 * cors (2.8.5)
 * dotenv (10.0.0)
 * express (4.17.1)
-* express-paginate (1.0.2)
 * express-validator (6.11.1)
 * helmet (4.6.0)
 * jsonwebtoken (8.5.1)
@@ -22,7 +21,6 @@
 
 * @types/bcryptjs (2.4.2),
 * @types/cors (2.8.10),
-* @types/express-paginate (1.0.0),
 * @types/jest (26.0.24)
 * @types/jsonwebtoken (8.5.1)
 * @types/morgan (1.9.2)
