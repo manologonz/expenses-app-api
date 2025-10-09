@@ -79,3 +79,4 @@ dist/
 # Editor
 .idea
 .vscode
+/generated/prisma
