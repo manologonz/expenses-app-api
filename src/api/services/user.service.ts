@@ -1,45 +1,46 @@
-import {BaseService} from "./base.service";
-import {User, IUser} from "../entities/user.entity";
-import jwt from "jsonwebtoken"
-import {JWT_SECRET} from "../../utils/constants";
-import bcrypt from "bcryptjs";
+import { $Enums, Prisma } from '../../../generated/prisma';
+import userRepository from '../repositories/user.repository';
+import { GenerateTokensOpts, CustomJwtPayload, UserLean } from '../../utils/types';
+import jwtUtil from '../../utils/jwt-util';
 
-class UserService extends BaseService<IUser> {
-    getUserToken(email: string, id: number) {
-        const secret = JWT_SECRET + email;
-        return jwt.sign({id}, secret);
+class UserService {
+    createUser(data: Prisma.UserCreateInput) {
+        return userRepository.createUser(data);
     }
 
-     getUserByEmail(email: string) {
-        return this.repository.findOneBy({email});
+    getAdminCount() {
+        return userRepository.countUsers({ where: { role: $Enums.Role.ADMINISTRATOR } });
     }
 
-    getUserByUsername(value: string) {
-        return this.repository.findOneBy({username: value});
+    getUserById(userId: number) {
+        return userRepository.findUserById(userId);
     }
 
-    async validateUser(email: string, password: string) {
-        const user = await this.getUserByEmail(email);
-        if(user !== null) {
-            const isLoginValid = bcrypt.compare(password, user.password);
+    getUserByEmail(email: string) {
+        return userRepository.findUserByEmail(email);
+    }
 
-            if(!isLoginValid) {
-                return null;
-            }
+    async generateUserAccess(userData: UserLean, opts?: GenerateTokensOpts) {
+        return jwtUtil.generateTokens(userData, opts);
+    }
 
+    async checkCredentials(email: string, password: string) {
+        const userData = await this.getUserByEmail(email);
+
+        if (!userData) {
             return {
-                user: {
-                    id: user.id,
-                    username: user.username,
-                    email: user.email,
-                },
-                token: this.getUserToken(user.email, user.id)
-            }
-
+                valid: false,
+                user: userData,
+            };
         }
 
-        return null;
+        return {
+            valid: jwtUtil.checkPassword(password, userData.password),
+            user: userData as UserLean,
+        };
     }
 }
 
-export default new UserService(User);
+const userService = new UserService();
+
+export default userService;

@@ -1,12 +1,15 @@
-import "reflect-metadata";
-import app from "./api/app";
-import db from "./db";
-import {PORT} from "./utils/constants";
+import 'reflect-metadata';
+import app from './api/app';
+import { PORT, HOST } from './utils/constants';
+import { databaseCheckHealth } from './db/index';
 
-db.initialize()
-    .then(() => {
-        app.listen(PORT, () => {
-            console.log("listening on: http://localhost:"+PORT);
+(async function () {
+    try {
+        await databaseCheckHealth();
+        app.listen(PORT, HOST, () => {
+            console.log(`listening on: ${HOST}:${PORT}`);
         });
-    })
-    .catch((error) => console.log(error));
+    } catch (error) {
+        console.error(error);
+    }
+})();

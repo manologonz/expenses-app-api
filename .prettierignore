@@ -1,0 +1,21 @@
+# Dependencies
+node_modules
+
+# Build output
+dist
+generated
+
+# Database
+prisma/
+# Coverage
+coverage
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Lock files
+pnpm-lock.yaml
+package-lock.json
+yarn.lock

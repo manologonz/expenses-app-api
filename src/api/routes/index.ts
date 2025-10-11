@@ -1,10 +1,8 @@
-import {Router} from "express";
-import RWelcome from "./welcome.routes";
-import RAuth from "./auth.routes";
+import { Router } from 'express';
+import RAuthV1 from './v1/auth.routes';
 
 const router = Router();
 
-router.use(RWelcome);
-router.use(RAuth);
+router.use(RAuthV1);
 
 export default router;

@@ -1,9 +1,12 @@
-import {Request} from "express";
-
+import { UserLean } from '../../src/utils/types';
 declare global {
     namespace Express {
         interface Request {
-            user?: string;
+            state: {
+                user?: UserLean;
+            };
         }
     }
 }
+
+export {};
