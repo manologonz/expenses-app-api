@@ -23,11 +23,20 @@ model User {
     id        Int       @id @default(autoincrement())
     firstName String    @db.VarChar(255)
     lastName  String    @db.VarChar(255)
-    email     String    @db.VarChar(255)
+    email     String    @unique @db.VarChar(255)
     username  String    @unique @db.VarChar(255)
     password  String    @db.VarChar(255)
+    active    Boolean   @default(false)
     role      Role
     posts     Expense[]
+}
+
+model AccountActivation {
+    id              Int      @id @default(autoincrement())
+    activationToken String   @db.VarChar(255)
+    email           String   @unique @db.VarChar(255)
+    expiration      DateTime @default(now())
+    role            Role
 }
 
 model Expense {

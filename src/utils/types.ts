@@ -1,4 +1,6 @@
 import { User } from '../../generated/prisma';
+import { Request } from 'express';
+import { AccountActivation } from '../../generated/prisma/index';
 
 export class HttpError extends Error {
     statusCode: number;
@@ -25,6 +27,12 @@ export type ValidationErrors = {
 export interface CustomJwtPayload extends Omit<User, 'password'> {}
 
 export interface UserLean extends Omit<User, 'password'> {}
+
+export interface AccountActivationLean extends Omit<AccountActivation, 'id'> {}
+
+export type ModelResultOptions = {
+    lean?: boolean;
+};
 
 type Unit =
     | 'Years'
@@ -77,3 +85,9 @@ export type CredentialsResponse = {
     accessToken: string;
     refreshToken?: string;
 };
+
+export interface AuthRequest extends Request {
+    state: {
+        user: UserLean;
+    };
+}
