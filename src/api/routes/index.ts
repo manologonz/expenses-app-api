@@ -1,6 +1,6 @@
-import {Router} from "express";
-import RWelcome from "./welcome.routes";
-import RAuth from "./auth.routes";
+import { Router } from 'express';
+import RWelcome from './welcome.routes';
+import RAuth from './auth.routes';
 
 const router = Router();
 

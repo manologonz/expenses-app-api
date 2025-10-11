@@ -1,10 +1,9 @@
-import {Request, Response, NextFunction} from "express";
-import {HttpError, ErrorResponse} from "./types";
-
+import { Request, Response, NextFunction } from 'express';
+import { ErrorResponse, HttpError } from './types';
 
 // Not Found error generator
 export function notFound(req: Request, res: Response, next: NextFunction) {
-    const error: HttpError = new HttpError({message: "Not Found", statusCode: 404});
+    const error: HttpError = new HttpError({ message: 'Not Found', statusCode: 404 });
     next(error);
 }
 
@@ -13,13 +12,13 @@ export function errorHandler(err: HttpError, req: Request, res: Response, next: 
     res.status(err.statusCode || 500);
     const data: ErrorResponse = {
         detail: err.message,
-    }
+    };
 
-    if(!!err.validationErrors) {
+    if (err.validationErrors) {
         data.detail = err.validationErrors;
     }
 
-    if(process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === 'development') {
         data.stack = err.stack;
     }
 
