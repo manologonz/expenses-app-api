@@ -2,32 +2,56 @@
   "name": "express-typescript-starter",
   "version": "1.0.0",
   "description": "A Typescript Node-Express API starter",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "packageManager": "pnpm@9.0.0",
   "scripts": {
-    "start": "node dist/app.js",
-    "dev": "nodemon src/index.ts",
+    "start": "node dist/index.js",
+    "dev": "nodemon --watch src --exec ts-node src/index.ts",
     "test": "jest",
-    "build": "tsc -p ."
+    "build": "tsc -p .",
+    "clean": "rm -rf dist",
+    "lint": "eslint . --ext .ts",
+    "prebuild": "npm run clean",
+    "dev:debug": "nodemon --watch src --exec node --inspect -r ts-node/register src/index.ts",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/manologonz/expenses-app-api"
   },
   "keywords": [],
   "author": "manologonz",
   "license": "MIT",
   "devDependencies": {
     "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
     "@types/jest": "^30.0.0",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.10",
     "@types/node": "^24.7.0",
     "@types/supertest": "^6.0.3",
+    "@types/multer": "^2.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.46.0",
+    "@typescript-eslint/parser": "^8.46.0",
+    "eslint": "^9.37.0",
     "jest": "^30.2.0",
     "nodemon": "^3.1.10",
+    "prisma": "^6.17.0",
     "supertest": "^7.1.4",
     "ts-jest": "^29.4.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@types/express": "^5.0.3",
+    "@prisma/client": "^6.17.1",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
@@ -39,7 +63,6 @@
     "multer": "^2.0.2",
     "pg": "^8.16.3",
     "reflect-metadata": "^0.2.2",
-    "typeorm": "^0.3.27",
     "uuid": "^13.0.0"
   },
   "jest": {

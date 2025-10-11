@@ -6,11 +6,11 @@ export function checkValidationErrors(request: Request) {
     const errors: ValidationErrors = {};
     const result = validationResult(request);
     if (!result.isEmpty()) {
-        result.array().forEach(({ msg, param }) => {
-            if (!!errors[param]) {
-                errors[param] = [...errors[param], msg];
+        result.array().forEach(({ msg, type, }) => {
+            if (!!errors[type]) {
+                errors[type] = [...errors[type], msg];
             } else {
-                errors[param] = [msg];
+                errors[type] = [msg];
             }
         });
         throw new HttpError({message: "Validation Error", statusCode: 400, validationErrors: errors});
