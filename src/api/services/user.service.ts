@@ -1,11 +1,19 @@
-import { $Enums, Prisma } from '../../../generated/prisma';
+import { $Enums, AccountActivation, Prisma } from '../../../generated/prisma';
 import userRepository from '../repositories/user.repository';
-import { GenerateTokensOpts, CustomJwtPayload, UserLean } from '../../utils/types';
+import { AccountActivationLean, GenerateTokensOpts, ModelResultOptions, UserLean } from '../../utils/types';
 import jwtUtil from '../../utils/jwt-util';
+import { v4 as uuid } from 'uuid';
+import accountActivationRepository from '../repositories/account-activation.repository';
 
 class UserService {
-    createUser(data: Prisma.UserCreateInput) {
-        return userRepository.createUser(data);
+    async createUser(data: Prisma.UserCreateInput, opts?: ModelResultOptions) {
+        const user = await userRepository.createUser(data);
+
+        if (opts?.lean) {
+            return user as UserLean;
+        }
+
+        return user;
     }
 
     getAdminCount() {
@@ -38,6 +46,24 @@ class UserService {
             valid: jwtUtil.checkPassword(password, userData.password),
             user: userData as UserLean,
         };
+    }
+
+    async generateUserInvite(email: string, role: $Enums.Role, opts?: ModelResultOptions) {
+        const activationToken = uuid();
+
+        await accountActivationRepository.deleteActivationTokenByEmail(email);
+
+        const invitation = await accountActivationRepository.createAccontActivationToken({
+            email,
+            activationToken,
+            role,
+        });
+
+        if (opts?.lean) {
+            return invitation as AccountActivationLean;
+        }
+
+        return invitation;
     }
 }
 
