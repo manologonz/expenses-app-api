@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { ErrorResponse, HttpError } from './types';
+import jwtUtil from './jwt-util';
+import { $Enums } from '../../generated/prisma';
 
 // Not Found error generator
 export function notFound(req: Request, res: Response, next: NextFunction) {
@@ -23,4 +25,37 @@ export function errorHandler(err: HttpError, req: Request, res: Response, next: 
     }
 
     res.json(data);
+}
+
+export async function authenticated(req: Request, res: Response, next: NextFunction) {
+    const authToken = jwtUtil.getRequestToken(req);
+    const authError = new HttpError({ message: 'Not authenticated', statusCode: 403 });
+
+    if (!authToken) {
+        next(authError);
+        return;
+    }
+
+    const tokenValidation = jwtUtil.validateToken(authToken);
+
+    if (!tokenValidation.valid) {
+        if (tokenValidation.expired) {
+            authError.message = 'Token expired';
+        }
+        next(authError);
+        return;
+    }
+
+    req.state.user = tokenValidation.data;
+    next();
+}
+
+export async function isAdmin(req: Request, res: Response, next: NextFunction) {
+    const userState = req?.state?.user;
+
+    if (!(userState?.role === $Enums.Role.ADMINISTRATOR)) {
+        throw new HttpError({ message: 'Not authorized', statusCode: 403 });
+    }
+
+    next();
 }

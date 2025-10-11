@@ -1,12 +1,15 @@
 import 'reflect-metadata';
 import app from './api/app';
-import { PORT } from './utils/constants';
-import { checkHealth } from './db/index';
+import { PORT, HOST } from './utils/constants';
+import { databaseCheckHealth } from './db/index';
 
-checkHealth()
-    .then(() => {
-        app.listen(PORT, () => {
-            console.log('listening on: http://localhost:' + PORT);
+(async function () {
+    try {
+        await databaseCheckHealth();
+        app.listen(PORT, HOST, () => {
+            console.log(`listening on: ${HOST}:${PORT}`);
         });
-    })
-    .catch((error: any) => console.log(error));
+    } catch (error) {
+        console.error(error);
+    }
+})();
