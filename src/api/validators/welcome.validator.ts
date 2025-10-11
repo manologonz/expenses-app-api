@@ -1,12 +1,12 @@
-import {checkSchema} from "express-validator";
+import { checkSchema } from 'express-validator';
 
 export const createWelcomeValidators = checkSchema({
     message: {
         isString: {
-            errorMessage: "This field must be string"
+            errorMessage: 'This field must be string',
         },
         exists: {
-            errorMessage: "This is a required field"
-        }
-    }
+            errorMessage: 'This is a required field',
+        },
+    },
 });

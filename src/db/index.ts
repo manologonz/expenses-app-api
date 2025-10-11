@@ -1,6 +1,9 @@
-import {DataSource} from "typeorm";
+import { PrismaClient } from '../../generated/prisma';
 
-import {CONNECTION_CONFIGS} from "../utils/constants";
+const prisma = new PrismaClient();
 
-const AppDataSource = new DataSource(CONNECTION_CONFIGS);
-export default AppDataSource;
+export function checkHealth() {
+    return prisma.$connect();
+}
+
+export default prisma;

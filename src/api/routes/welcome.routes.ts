@@ -1,11 +1,9 @@
-import express from "express";
-import {createWelcomeEntry, welcome} from "../controllers/welcome.controller";
-import {createWelcomeValidators} from "../validators/welcome.validator";
+import express from 'express';
+import { welcome } from '../controllers/welcome.controller';
 
 const router = express.Router();
-const prefix = "/welcome";
+const prefix = '/welcome';
 
 router.get(prefix, welcome);
-router.put(prefix, createWelcomeValidators, createWelcomeEntry);
 
 export default router;
