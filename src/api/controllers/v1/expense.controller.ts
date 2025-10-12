@@ -12,7 +12,7 @@ export function deleteExpense(req: Request, res: Response, next: NextFunction) {
     return { message: 'delete' };
 }
 
-export function udpateExpenseTags(req: Request, res: Response, next: NextFunction) {
+export function updateExpenseTags(req: Request, res: Response, next: NextFunction) {
     return { message: 'create' };
 }
 

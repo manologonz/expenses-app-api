@@ -37,7 +37,7 @@ export class UserRepository {
         return prismaClient.user.delete({ where: { id: userId } });
     }
 
-    async updateUser(userId: number, data: UpdateUserDTO) {
+    async updateUser(userId: number, data: Prisma.UserUpdateInput) {
         return prismaClient.user.update({ where: { id: userId }, data });
     }
 

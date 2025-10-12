@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 import userService from '../../services/user.service';
 import jwtUtil from '../../../utils/jwt-util';
 import { HttpError } from '../../../utils/types';
+
 export async function login(req: Request, res: Response, next: NextFunction) {
     const { email, password } = req.body;
 
