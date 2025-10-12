@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { ErrorResponse, HttpError } from './types';
+import { ErrorResponse, HttpError, UserLean } from './types';
 import jwtUtil from './jwt-util';
 import { $Enums } from '../../generated/prisma';
 
@@ -46,7 +46,7 @@ export async function authenticated(req: Request, res: Response, next: NextFunct
         return;
     }
 
-    req.state.user = tokenValidation.data;
+    req.state.user = tokenValidation.data as UserLean;
     next();
 }
 
@@ -57,5 +57,9 @@ export async function isAdmin(req: Request, res: Response, next: NextFunction) {
         throw new HttpError({ message: 'Not authorized', statusCode: 403 });
     }
 
+    next();
+}
+
+export async function isAccountOwner(req: Request, res: Response, next: NextFunction) {
     next();
 }

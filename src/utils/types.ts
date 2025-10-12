@@ -1,6 +1,7 @@
 import { User } from '../../generated/prisma';
 import { Request } from 'express';
 import { AccountActivation } from '../../generated/prisma/index';
+import { validationResult } from 'express-validator';
 
 export class HttpError extends Error {
     statusCode: number;
@@ -90,4 +91,9 @@ export interface AuthRequest extends Request {
     state: {
         user: UserLean;
     };
+}
+
+export interface ValidationResult {
+    valid: boolean;
+    detail?: string;
 }

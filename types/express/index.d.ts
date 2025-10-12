@@ -3,7 +3,7 @@ declare global {
     namespace Express {
         interface Request {
             state: {
-                user?: UserLean;
+                user: UserLean;
             };
         }
     }
