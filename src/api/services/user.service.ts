@@ -1,4 +1,4 @@
-import { $Enums, AccountActivation, Prisma } from '../../../generated/prisma';
+import { $Enums, AccountActivation, Prisma, User } from '../../../generated/prisma';
 import userRepository from '../repositories/user.repository';
 import { AccountActivationLean, GenerateTokensOpts, ModelResultOptions, UserLean } from '../../utils/types';
 import jwtUtil from '../../utils/jwt-util';
@@ -8,6 +8,20 @@ import accountActivationRepository from '../repositories/account-activation.repo
 class UserService {
     async createUser(data: Prisma.UserCreateInput, opts?: ModelResultOptions) {
         const user = await userRepository.createUser(data);
+
+        if (opts?.lean) {
+            return user as UserLean;
+        }
+
+        return user;
+    }
+
+    async updateUserActiveStatus(userId: number, status: boolean) {
+        return await userRepository.updateUser(userId, { active: status });
+    }
+
+    async deleteUser(userId: number, opts?: ModelResultOptions) {
+        const user = await userRepository.deleteUser(userId);
 
         if (opts?.lean) {
             return user as UserLean;
@@ -26,6 +40,10 @@ class UserService {
 
     getUserByEmail(email: string) {
         return userRepository.findUserByEmail(email);
+    }
+
+    getUserByUsername(username: string) {
+        return userRepository.findUserByUsername(username);
     }
 
     async generateUserAccess(userData: UserLean, opts?: GenerateTokensOpts) {
