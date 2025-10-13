@@ -46,6 +46,10 @@ export async function authenticated(req: Request, res: Response, next: NextFunct
         return;
     }
 
+    if (!req.state) {
+        req.state = {};
+    }
+
     req.state.user = tokenValidation.data as UserLean;
     next();
 }
@@ -57,9 +61,5 @@ export async function isAdmin(req: Request, res: Response, next: NextFunction) {
         throw new HttpError({ message: 'Not authorized', statusCode: 403 });
     }
 
-    next();
-}
-
-export async function isAccountOwner(req: Request, res: Response, next: NextFunction) {
     next();
 }

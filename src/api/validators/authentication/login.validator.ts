@@ -1,6 +1,6 @@
 import { checkSchema } from 'express-validator';
 
-export const loginValidator = checkSchema({
+export default checkSchema({
     email: {
         exists: {
             errorMessage: 'This is a required field.',

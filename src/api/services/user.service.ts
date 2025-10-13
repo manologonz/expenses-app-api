@@ -1,16 +1,97 @@
-import { $Enums, AccountActivation, Prisma, User } from '../../../generated/prisma';
+import { $Enums, Prisma } from '../../../generated/prisma';
 import userRepository from '../repositories/user.repository';
-import { AccountActivationLean, GenerateTokensOpts, ModelResultOptions, UserLean } from '../../utils/types';
+import { GenerateTokensOpts, ModelFindOpts, ModelResultOptions, PaginationOpts, UserLean } from '../../utils/types';
 import jwtUtil from '../../utils/jwt-util';
-import { v4 as uuid } from 'uuid';
 import accountActivationRepository from '../repositories/account-activation.repository';
+import { NextFunction, Request, Response } from 'express';
+import inviteValidator from '../validators/authentication/invite.validator';
+import { validateRequestBody } from '../../utils/helpers';
+import loginValidator from '../validators/authentication/login.validator';
+import crypto from 'crypto';
+import registrationValidator from '../validators/user/registration.validator';
+import dayjs from 'dayjs';
+import Pagination from '../../utils/pagination';
+import { BaseService } from './base-service.service';
+import UserMapper from '../mappers/user.mapper';
+import AccountActivationMapper from '../mappers/user-activation.mapper';
 
-class UserService {
+class UserService extends BaseService {
+    pagination: Pagination;
+    userMapper: UserMapper;
+    accountActivationMapper: AccountActivationMapper;
+
+    constructor() {
+        super(
+            ['username', 'firstName', 'lastName', 'email'],
+            ['role'],
+            ['username', 'firstName', 'lastName', 'role', 'id'],
+        );
+        this.pagination = new Pagination();
+        this.userMapper = new UserMapper();
+        this.accountActivationMapper = new AccountActivationMapper();
+    }
+
+    async getAllUsers(findOpts: ModelFindOpts, pagination: PaginationOpts) {
+        const query: Prisma.UserFindManyArgs = {};
+        query.where = {};
+
+        if (findOpts.search) {
+            query.where.OR = this.searchOnFields.map((field) => {
+                return {
+                    [field]: {
+                        contains: findOpts.search,
+                        mode: 'insensitive', // ← Add this for case-insensitive
+                    },
+                };
+            });
+        }
+
+        const filter = this.parseFindOpts(findOpts.filter);
+
+        if (filter) {
+            query.where = {
+                ...query.where,
+                [filter.field]: filter.value,
+            };
+        }
+
+        if (findOpts.sort) {
+            const sortOpts = this.parseFindOpts(findOpts.sort);
+            if (sortOpts && this.sortableFields.includes(sortOpts.field)) {
+                const direction = sortOpts.value.toLowerCase();
+                if (direction === 'asc' || direction === 'desc') {
+                    query.orderBy = {
+                        [sortOpts.field]: direction,
+                    };
+                }
+            }
+        }
+
+        const count = await userRepository.countUsers(query as Prisma.UserCountArgs);
+        query.skip = pagination.skip;
+        query.take = pagination.limit;
+
+        const data = (await userRepository.findAllUsers(query)).map(this.userMapper.toLeanModel);
+
+        return {
+            data,
+            count,
+        };
+    }
+
     async createUser(data: Prisma.UserCreateInput, opts?: ModelResultOptions) {
-        const user = await userRepository.createUser(data);
+        const user = await userRepository.createUser({
+            firstName: data.firstName,
+            lastName: data.lastName,
+            username: data.username,
+            password: await jwtUtil.hashPassword(data.password),
+            email: data.email,
+            role: data.role,
+            active: true,
+        });
 
         if (opts?.lean) {
-            return user as UserLean;
+            return this.userMapper.toLeanModel(user);
         }
 
         return user;
@@ -24,7 +105,7 @@ class UserService {
         const user = await userRepository.deleteUser(userId);
 
         if (opts?.lean) {
-            return user as UserLean;
+            return this.userMapper.toLeanModel(user);
         }
 
         return user;
@@ -60,28 +141,56 @@ class UserService {
             };
         }
 
+        const valid = await jwtUtil.checkPassword(password, userData.password);
+
         return {
-            valid: jwtUtil.checkPassword(password, userData.password),
-            user: userData as UserLean,
+            valid,
+            user: this.userMapper.toLeanModel(userData),
         };
     }
 
     async generateUserInvite(email: string, role: $Enums.Role, opts?: ModelResultOptions) {
-        const activationToken = uuid();
+        const activationToken = crypto.randomBytes(32).toString('hex');
 
-        await accountActivationRepository.deleteActivationTokenByEmail(email);
+        const exists = await accountActivationRepository.findActivationTokenByEmail(email);
+
+        const expiration = dayjs().add(15, 'minutes').toISOString();
+
+        if (exists) {
+            await accountActivationRepository.deleteActivationTokenByEmail(email);
+        }
 
         const invitation = await accountActivationRepository.createAccontActivationToken({
             email,
             activationToken,
             role,
+            expiration,
         });
 
         if (opts?.lean) {
-            return invitation as AccountActivationLean;
+            return this.accountActivationMapper.toLeanModel(invitation);
         }
 
         return invitation;
+    }
+
+    async countUsersWithUsername(username: string) {
+        return await userRepository.countUsers({ where: { username: username } });
+    }
+
+    async inviteInputValidators(req: Request, res: Response, next: NextFunction) {
+        await validateRequestBody(req, inviteValidator);
+        next();
+    }
+
+    async loginValidator(req: Request, res: Response, next: NextFunction) {
+        await validateRequestBody(req, loginValidator);
+        next();
+    }
+
+    async userRegistrationValidators(req: Request, res: Response, next: NextFunction) {
+        await validateRequestBody(req, registrationValidator);
+        next();
     }
 }
 

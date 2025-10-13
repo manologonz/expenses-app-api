@@ -1,21 +1,53 @@
 import { Request, Response, NextFunction } from 'express';
-import { AuthRequest, HttpError } from '../../../utils/types';
+import { HttpError, ModelFindOpts, UserLean } from '../../../utils/types';
 import userService from '../../services/user.service';
 import accountActivationService from '../../services/account-activation.service';
 
+export async function listUser(req: Request, res: Response, next: NextFunction) {
+    const paginationQuery = userService.pagination.parse(req);
+
+    const findOpts: ModelFindOpts = {
+        search: req.query.search as string,
+        filter: req.query.filter as string,
+        sort: req.query.sort as string,
+    };
+
+    const userData = await userService.getAllUsers(findOpts, paginationQuery);
+
+    const response = userService.pagination.response<UserLean>({
+        pagination: paginationQuery,
+        count: userData.count,
+        data: userData.data,
+    });
+
+    res.status(200).json(response);
+}
 export async function userRegistration(req: Request, res: Response, next: NextFunction) {
     const data = req.body;
     const registrationToken = req.query.registrationToken as string;
     const requestError = new HttpError({ message: 'Unable to process registration', statusCode: 400 });
 
-    const result = await accountActivationService.validateAccountActivationToken(registrationToken, data.email);
+    const accountActivationData = await accountActivationService.validateAccountActivationToken(
+        registrationToken,
+        data.email,
+    );
 
-    if (result === false) {
+    if (!accountActivationData) {
         requestError.message = 'Invalid account activation token';
         throw requestError;
     }
 
-    const newUser = await userService.createUser({ ...data, active: true }, { lean: true });
+    const newUser = await userService.createUser(
+        {
+            firstName: data.firstName,
+            lastName: data.lastName,
+            username: data.username,
+            password: data.password,
+            email: accountActivationData.email,
+            role: accountActivationData.role,
+        },
+        { lean: true },
+    );
 
     res.status(200).json({ detail: '', data: newUser });
 }
