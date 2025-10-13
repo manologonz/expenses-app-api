@@ -1,8 +1,27 @@
 import { Request, Response, NextFunction } from 'express';
-import { HttpError } from '../../../utils/types';
+import { HttpError, ModelFindOpts, UserLean } from '../../../utils/types';
 import userService from '../../services/user.service';
 import accountActivationService from '../../services/account-activation.service';
 
+export async function listUser(req: Request, res: Response, next: NextFunction) {
+    const paginationQuery = userService.pagination.parse(req);
+
+    const findOpts: ModelFindOpts = {
+        search: req.query.search as string,
+        filter: req.query.filter as string,
+        sort: req.query.sort as string,
+    };
+
+    const userData = await userService.getAllUsers(findOpts, paginationQuery);
+
+    const response = userService.pagination.response<UserLean>({
+        pagination: paginationQuery,
+        count: userData.count,
+        data: userData.data,
+    });
+
+    res.status(200).json(response);
+}
 export async function userRegistration(req: Request, res: Response, next: NextFunction) {
     const data = req.body;
     const registrationToken = req.query.registrationToken as string;
@@ -12,8 +31,6 @@ export async function userRegistration(req: Request, res: Response, next: NextFu
         registrationToken,
         data.email,
     );
-
-    console.log(accountActivationData);
 
     if (!accountActivationData) {
         requestError.message = 'Invalid account activation token';
