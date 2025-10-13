@@ -63,7 +63,3 @@ export async function isAdmin(req: Request, res: Response, next: NextFunction) {
 
     next();
 }
-
-export async function isAccountOwner(req: Request, res: Response, next: NextFunction) {
-    next();
-}
