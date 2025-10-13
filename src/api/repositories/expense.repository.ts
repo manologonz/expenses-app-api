@@ -18,12 +18,12 @@ class ExpenseRepository {
         return prisma.expense.create({ data });
     }
 
-    updateExpense(userId: number, expenseId: number, data: Prisma.ExpenseUpdateInput) {
+    updateUserExpense(userId: number, expenseId: number, data: Prisma.ExpenseUpdateInput) {
         return prisma.expense.update({ where: { userId, id: expenseId }, data });
     }
 
-    deleteExpense(query: Prisma.ExpenseDeleteArgs) {
-        return prisma.expense.delete(query);
+    deleteUserExpense(userId: number, expenseId: number) {
+        return prisma.expense.delete({ where: { id: expenseId, userId } });
     }
 }
 

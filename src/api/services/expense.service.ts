@@ -30,7 +30,7 @@ class ExpenseService {
             throw new HttpError({ message: "Couldn't update expense", statusCode: 404 });
         }
 
-        return expenseRepository.updateExpense(userId, expenseId, data);
+        return expenseRepository.updateUserExpense(userId, expenseId, data);
     }
 
     async updateUserExpenseTags(userId: number, expenseId: number, tags: number[]) {
@@ -43,19 +43,19 @@ class ExpenseService {
         }
 
         if (tags) {
-            connectedTags = (await tagRepository.findTagsById(tags)).map((tag) => ({
+            connectedTags = (await tagRepository.findUserTagsById(userId, tags)).map((tag) => ({
                 id: tag.id,
             }));
         }
 
-        return expenseRepository.updateExpense(userId, expenseId, { tags: { set: connectedTags } });
+        return expenseRepository.updateUserExpense(userId, expenseId, { tags: { set: connectedTags } });
     }
 
     async createUserExpense(userId: number, tags: number[], data: Prisma.ExpenseCreateInput) {
         let connectedTags: Prisma.TagsOnPostsWhereUniqueInput[] = [];
 
         if (tags) {
-            connectedTags = (await tagRepository.findTagsById(tags)).map((tag) => ({
+            connectedTags = (await tagRepository.findUserTagsById(userId, tags)).map((tag) => ({
                 id: tag.id,
             }));
         }
@@ -73,7 +73,7 @@ class ExpenseService {
             throw new HttpError({ message: "Couldn't delete expense", statusCode: 404 });
         }
 
-        return expenseRepository.deleteExpense({ where: { id: expenseId, userId: userId } });
+        return expenseRepository.deleteUserExpense(userId, expenseId);
     }
 
     async expenseCreateValidator(req: Request, res: Response, next: NextFunction) {
