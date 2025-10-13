@@ -41,3 +41,7 @@ export function booleanMessage(field: string) {
 export function emailMessage(field: string) {
     return `[${field}] must be a valid email`;
 }
+
+export function hexColorMessage(field: string) {
+    return `[${field}] must be a hexadecimal color`;
+}
