@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { AuthRequest, HttpError } from '../../../utils/types';
+import { HttpError } from '../../../utils/types';
 import userService from '../../services/user.service';
 import accountActivationService from '../../services/account-activation.service';
 
@@ -8,14 +8,29 @@ export async function userRegistration(req: Request, res: Response, next: NextFu
     const registrationToken = req.query.registrationToken as string;
     const requestError = new HttpError({ message: 'Unable to process registration', statusCode: 400 });
 
-    const result = await accountActivationService.validateAccountActivationToken(registrationToken, data.email);
+    const accountActivationData = await accountActivationService.validateAccountActivationToken(
+        registrationToken,
+        data.email,
+    );
 
-    if (result === false) {
+    console.log(accountActivationData);
+
+    if (!accountActivationData) {
         requestError.message = 'Invalid account activation token';
         throw requestError;
     }
 
-    const newUser = await userService.createUser({ ...data, active: true }, { lean: true });
+    const newUser = await userService.createUser(
+        {
+            firstName: data.firstName,
+            lastName: data.lastName,
+            username: data.username,
+            password: data.password,
+            email: accountActivationData.email,
+            role: accountActivationData.role,
+        },
+        { lean: true },
+    );
 
     res.status(200).json({ detail: '', data: newUser });
 }
