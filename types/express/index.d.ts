@@ -5,6 +5,11 @@ declare global {
             state?: {
                 user?: UserLean;
             };
+
+            pagination?: {
+                page: string;
+                limit: string;
+            };
         }
     }
 }

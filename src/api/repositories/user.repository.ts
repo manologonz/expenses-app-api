@@ -1,6 +1,5 @@
 import prismaClient from '../../db/index';
-import { $Enums, Prisma, User } from '../../../generated/prisma/index';
-import { UserLean } from '../../utils/types';
+import { $Enums, Prisma } from '../../../generated/prisma/index';
 
 export type UpdateUserDTO = {
     firstName?: string;

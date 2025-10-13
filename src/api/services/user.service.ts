@@ -1,6 +1,13 @@
 import { $Enums, Prisma } from '../../../generated/prisma';
 import userRepository from '../repositories/user.repository';
-import { AccountActivationLean, GenerateTokensOpts, ModelResultOptions, UserLean } from '../../utils/types';
+import {
+    AccountActivationLean,
+    GenerateTokensOpts,
+    ModelFindOpts,
+    ModelResultOptions,
+    PaginationOpts,
+    UserLean,
+} from '../../utils/types';
 import jwtUtil from '../../utils/jwt-util';
 import accountActivationRepository from '../repositories/account-activation.repository';
 import { NextFunction, Request, Response } from 'express';
@@ -10,8 +17,75 @@ import loginValidator from '../validators/authentication/login.validator';
 import crypto from 'crypto';
 import registrationValidator from '../validators/user/registration.validator';
 import dayjs from 'dayjs';
+import Pagination from '../../utils/pagination';
+import { BaseService } from './base-service.service';
+import UserMapper from '../mappers/user.mapper';
+import AccountActivationMapper from '../mappers/user-activation.mapper';
 
-class UserService {
+class UserService extends BaseService {
+    pagination: Pagination;
+    userMapper: UserMapper;
+    accountActivationMapper: AccountActivationMapper;
+
+    constructor() {
+        super(
+            ['username', 'firstName', 'lastName', 'email'],
+            ['role'],
+            ['username', 'firstName', 'lastName', 'role', 'id'],
+        );
+        this.pagination = new Pagination();
+        this.userMapper = new UserMapper();
+        this.accountActivationMapper = new AccountActivationMapper();
+    }
+
+    async getAllUsers(findOpts: ModelFindOpts, pagination: PaginationOpts) {
+        const query: Prisma.UserFindManyArgs = {};
+        query.where = {};
+
+        if (findOpts.search) {
+            query.where.OR = this.searchOnFields.map((field) => {
+                return {
+                    [field]: {
+                        contains: findOpts.search,
+                        mode: 'insensitive', // ← Add this for case-insensitive
+                    },
+                };
+            });
+        }
+
+        const filter = this.parseFindOpts(findOpts.filter);
+
+        if (filter) {
+            query.where = {
+                ...query.where,
+                [filter.field]: filter.value,
+            };
+        }
+
+        if (findOpts.sort) {
+            const sortOpts = this.parseFindOpts(findOpts.sort);
+            if (sortOpts && this.sortableFields.includes(sortOpts.field)) {
+                const direction = sortOpts.value.toLowerCase();
+                if (direction === 'asc' || direction === 'desc') {
+                    query.orderBy = {
+                        [sortOpts.field]: direction,
+                    };
+                }
+            }
+        }
+
+        const count = await userRepository.countUsers(query as Prisma.UserCountArgs);
+        query.skip = pagination.skip;
+        query.take = pagination.limit;
+
+        const data = (await userRepository.findAllUsers(query)).map(this.userMapper.toLeanModel);
+
+        return {
+            data,
+            count,
+        };
+    }
+
     async createUser(data: Prisma.UserCreateInput, opts?: ModelResultOptions) {
         const user = await userRepository.createUser({
             firstName: data.firstName,
@@ -24,7 +98,7 @@ class UserService {
         });
 
         if (opts?.lean) {
-            return user as UserLean;
+            return this.userMapper.toLeanModel(user);
         }
 
         return user;
@@ -38,7 +112,7 @@ class UserService {
         const user = await userRepository.deleteUser(userId);
 
         if (opts?.lean) {
-            return user as UserLean;
+            return this.userMapper.toLeanModel(user);
         }
 
         return user;
@@ -78,7 +152,7 @@ class UserService {
 
         return {
             valid,
-            user: userData as UserLean,
+            user: this.userMapper.toLeanModel(userData),
         };
     }
 
@@ -101,7 +175,7 @@ class UserService {
         });
 
         if (opts?.lean) {
-            return invitation as AccountActivationLean;
+            return this.accountActivationMapper.toLeanModel(invitation);
         }
 
         return invitation;

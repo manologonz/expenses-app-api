@@ -1,7 +1,6 @@
 import { User } from '../../generated/prisma';
 import { Request } from 'express';
 import { AccountActivation } from '../../generated/prisma/index';
-import { validationResult } from 'express-validator';
 
 export class HttpError extends Error {
     statusCode: number;
@@ -97,3 +96,15 @@ export interface ValidationResult {
     valid: boolean;
     detail?: string;
 }
+
+export type PaginationOpts = {
+    limit: number;
+    page: number;
+    skip: number;
+};
+
+export type ModelFindOpts = {
+    search?: string;
+    sort?: string;
+    filter?: string;
+};
