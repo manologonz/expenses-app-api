@@ -46,6 +46,10 @@ export async function authenticated(req: Request, res: Response, next: NextFunct
         return;
     }
 
+    if (!req.state) {
+        req.state = {};
+    }
+
     req.state.user = tokenValidation.data as UserLean;
     next();
 }

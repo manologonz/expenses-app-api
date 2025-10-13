@@ -35,7 +35,7 @@ model AccountActivation {
     id              Int      @id @default(autoincrement())
     activationToken String   @db.VarChar(255)
     email           String   @unique @db.VarChar(255)
-    expiration      DateTime @default(now())
+    expiration      DateTime
     role            Role
 }
 

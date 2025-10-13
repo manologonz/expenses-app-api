@@ -13,16 +13,20 @@ class AccountActivationService {
         const currentDate = dayjs();
 
         if (!accountActivationData) {
-            return false;
+            return null;
         }
 
         if (accountActivationData.activationToken !== token) {
-            return false;
+            return null;
         }
 
         const tokenExpirationDate = dayjs(accountActivationData.expiration);
 
-        return currentDate.isBefore(tokenExpirationDate);
+        if (!currentDate.isBefore(tokenExpirationDate)) {
+            return null;
+        }
+
+        return accountActivationData;
     }
 
     isActivationTokenValid(data: AccountActivation, enteredToken: string) {

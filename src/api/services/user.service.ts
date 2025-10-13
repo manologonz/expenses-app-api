@@ -1,13 +1,27 @@
-import { $Enums, AccountActivation, Prisma, User } from '../../../generated/prisma';
+import { $Enums, Prisma } from '../../../generated/prisma';
 import userRepository from '../repositories/user.repository';
 import { AccountActivationLean, GenerateTokensOpts, ModelResultOptions, UserLean } from '../../utils/types';
 import jwtUtil from '../../utils/jwt-util';
-import { v4 as uuid } from 'uuid';
 import accountActivationRepository from '../repositories/account-activation.repository';
+import { NextFunction, Request, Response } from 'express';
+import inviteValidator from '../validators/authentication/invite.validator';
+import { validateRequestBody } from '../../utils/helpers';
+import loginValidator from '../validators/authentication/login.validator';
+import crypto from 'crypto';
+import registrationValidator from '../validators/user/registration.validator';
+import dayjs from 'dayjs';
 
 class UserService {
     async createUser(data: Prisma.UserCreateInput, opts?: ModelResultOptions) {
-        const user = await userRepository.createUser(data);
+        const user = await userRepository.createUser({
+            firstName: data.firstName,
+            lastName: data.lastName,
+            username: data.username,
+            password: await jwtUtil.hashPassword(data.password),
+            email: data.email,
+            role: data.role,
+            active: true,
+        });
 
         if (opts?.lean) {
             return user as UserLean;
@@ -60,21 +74,30 @@ class UserService {
             };
         }
 
+        const valid = await jwtUtil.checkPassword(password, userData.password);
+
         return {
-            valid: jwtUtil.checkPassword(password, userData.password),
+            valid,
             user: userData as UserLean,
         };
     }
 
     async generateUserInvite(email: string, role: $Enums.Role, opts?: ModelResultOptions) {
-        const activationToken = uuid();
+        const activationToken = crypto.randomBytes(32).toString('hex');
 
-        await accountActivationRepository.deleteActivationTokenByEmail(email);
+        const exists = await accountActivationRepository.findActivationTokenByEmail(email);
+
+        const expiration = dayjs().add(15, 'minutes').toISOString();
+
+        if (exists) {
+            await accountActivationRepository.deleteActivationTokenByEmail(email);
+        }
 
         const invitation = await accountActivationRepository.createAccontActivationToken({
             email,
             activationToken,
             role,
+            expiration,
         });
 
         if (opts?.lean) {
@@ -82,6 +105,25 @@ class UserService {
         }
 
         return invitation;
+    }
+
+    async countUsersWithUsername(username: string) {
+        return await userRepository.countUsers({ where: { username: username } });
+    }
+
+    async inviteInputValidators(req: Request, res: Response, next: NextFunction) {
+        await validateRequestBody(req, inviteValidator);
+        next();
+    }
+
+    async loginValidator(req: Request, res: Response, next: NextFunction) {
+        await validateRequestBody(req, loginValidator);
+        next();
+    }
+
+    async userRegistrationValidators(req: Request, res: Response, next: NextFunction) {
+        await validateRequestBody(req, registrationValidator);
+        next();
     }
 }
 
