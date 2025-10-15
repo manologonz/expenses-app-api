@@ -1,20 +1,28 @@
 import { Prisma } from '../../../generated/prisma';
 import prisma from '../../db/index';
 class TagRepository {
-    findUserTagBySlug(slug: string) {
-        return prisma.tag.findFirst({ where: { slug: slug } });
+    findUserTagBySlug(userId: number, slug: string) {
+        return prisma.tag.findFirst({ where: { slug: slug, userId } });
+    }
+
+    countTags(query: Prisma.TagCountArgs) {
+        return prisma.tag.count(query);
     }
 
     findUserTagsById(userId: number, ids: number[]) {
-        return prisma.tag.findMany({ where: { id: { in: ids }, userId } });
+        return this.findAllTags({ where: { id: { in: ids }, userId } });
     }
 
     findUserTags(userId: number, query: Prisma.TagWhereInput) {
-        return prisma.tag.findMany({ where: { ...query, userId } });
+        return this.findAllTags({ where: { ...query, userId } });
     }
 
     findUserTag(userId: number, tagId: number) {
-        return prisma.tag.findMany({ where: { id: tagId, userId } });
+        return this.findAllTags({ where: { id: tagId, userId } });
+    }
+
+    findAllTags(query: Prisma.TagFindManyArgs) {
+        return prisma.tag.findMany(query);
     }
 
     createTag(data: Prisma.TagCreateInput) {
@@ -22,11 +30,19 @@ class TagRepository {
     }
 
     updateUserTag(userId: number, tagId: number, data: Prisma.TagUpdateInput) {
-        return prisma.expense.update({ where: { userId, id: tagId }, data });
+        return this.updateTag({ where: { userId, id: tagId }, data });
+    }
+
+    updateTag(query: Prisma.TagUpdateArgs) {
+        return prisma.tag.update(query);
     }
 
     deleteUserTag(userId: number, tagId: number) {
-        return prisma.expense.delete({ where: { id: tagId, userId } });
+        return this.deleteTag({ where: { id: tagId, userId } });
+    }
+
+    deleteTag(query: Prisma.TagDeleteArgs) {
+        return prisma.tag.delete(query);
     }
 }
 
