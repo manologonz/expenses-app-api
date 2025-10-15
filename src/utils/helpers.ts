@@ -27,3 +27,18 @@ export async function validateRequestBody(req: Request, validators: RunnableVali
     const result = validationResult(req);
     checkValidationErrors(result);
 }
+
+/**
+ * Converts a string into a URL-friendly slug
+ * @param text - The input string to convert
+ * @returns A slug with lowercase letters, numbers, and hyphens only
+ */
+export function textToSlug(text: string): string {
+    return text
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '') // Remove special characters except spaces and hyphens
+        .replace(/\s+/g, '-') // Replace one or more spaces with a single hyphen
+        .replace(/-+/g, '-') // Replace multiple hyphens with a single hyphen
+        .replace(/^-+|-+$/g, ''); // Remove leading and trailing hyphens
+}

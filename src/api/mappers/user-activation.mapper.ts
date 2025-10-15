@@ -8,6 +8,8 @@ export default class AccountActivationMapper {
             activationToken: data.activationToken,
             expiration: data.expiration,
             role: data.role,
+            createdAt: data.createdAt,
+            updatedAt: data.updatedAt,
         };
     }
 }
