@@ -10,6 +10,10 @@ class ExpenseRepository {
         return prisma.expense.findMany({ where: { ...query, userId } });
     }
 
+    findAllTags(query: Prisma.ExpenseFindManyArgs) {
+        return prisma.expense.findMany(query);
+    }
+
     findUserExpense(userId: number, expenseId: number) {
         return prisma.expense.findFirst({ where: { id: expenseId, userId } });
     }
@@ -18,12 +22,16 @@ class ExpenseRepository {
         return prisma.expense.create({ data });
     }
 
-    updateExpense(userId: number, expenseId: number, data: Prisma.ExpenseUpdateInput) {
+    expensesCount(query: Prisma.ExpenseCountArgs) {
+        return prisma.expense.count(query);
+    }
+
+    updateUserExpense(userId: number, expenseId: number, data: Prisma.ExpenseUpdateInput) {
         return prisma.expense.update({ where: { userId, id: expenseId }, data });
     }
 
-    deleteExpense(query: Prisma.ExpenseDeleteArgs) {
-        return prisma.expense.delete(query);
+    deleteUserExpense(userId: number, expenseId: number) {
+        return prisma.expense.delete({ where: { id: expenseId, userId } });
     }
 }
 

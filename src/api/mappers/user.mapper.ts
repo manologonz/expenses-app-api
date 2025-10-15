@@ -11,6 +11,8 @@ export default class UserMapper {
             role: data.role,
             email: data.email,
             active: data.active,
+            createdAt: data.createdAt,
+            updatedAt: data.updatedAt,
         };
     }
 }
