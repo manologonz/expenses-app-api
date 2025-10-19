@@ -4,7 +4,7 @@ import tagRepository from '../repositories/tag.repository';
 import createTagValidator from '../validators/tag/create-tag.validator';
 import { Request, Response, NextFunction } from 'express';
 import updateTagValidator from '../validators/tag/update-tag.validator';
-import { HttpError, ModelFindOpts, PaginationOpts } from '../../utils/types';
+import { HttpError, ModelFindOpts, PaginationQuery } from '../../utils/types';
 import Pagination from '../../utils/pagination';
 import { BaseService } from './base-service.service';
 
@@ -37,7 +37,7 @@ class TagService extends BaseService {
         return tagRepository.updateUserTag(userId, tagId, data);
     }
 
-    async getAllUserTags(userId: number, findOpts: ModelFindOpts, pagination: PaginationOpts) {
+    async getAllUserTags(userId: number, findOpts: ModelFindOpts, pagination: PaginationQuery) {
         const query: Prisma.TagFindManyArgs = {};
         query.where = { userId };
 

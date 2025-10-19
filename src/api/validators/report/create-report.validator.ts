@@ -1,5 +1,5 @@
 import { checkSchema, CustomValidator } from 'express-validator';
-import { requiredMessage, stringMessage } from '../messages';
+import { dateMessage, requiredMessage, stringMessage } from '../messages';
 import { HttpError } from '../../../utils/types';
 import dayjs from 'dayjs';
 
@@ -20,29 +20,36 @@ export default checkSchema({
     name: {
         exists: {
             errorMessage: requiredMessage('name'),
+            bail: true,
         },
         isString: {
             errorMessage: stringMessage('name'),
+            bail: true,
         },
     },
     startDate: {
         exists: {
             errorMessage: requiredMessage('startDate'),
+            bail: true,
         },
-        isString: {
-            errorMessage: stringMessage('startDate'),
+        isDate: {
+            errorMessage: dateMessage('startDate'),
+            bail: true,
         },
     },
     endDate: {
         exists: {
             errorMessage: requiredMessage('endDate'),
+            bail: true,
         },
-        isString: {
-            errorMessage: stringMessage('endDate'),
+        isDate: {
+            errorMessage: dateMessage('endDate'),
+            bail: true,
         },
         custom: {
             errorMessage: 'endDate must be after start date',
             options: isFutureDate,
+            bail: true,
         },
     },
 });

@@ -5,7 +5,7 @@ import createExpenseValidator from '../validators/expense/create-expense.validat
 import { Prisma } from '../../../generated/prisma';
 import expenseRepository from '../repositories/expense.repository';
 import tagRepository from '../repositories/tag.repository';
-import { HttpError, ModelFindOpts, PaginationOpts } from '../../utils/types';
+import { HttpError, ModelFindOpts, PaginationQuery } from '../../utils/types';
 import updateExpenseValidators from '../validators/expense/update-expense.validators';
 import udpateExpenseTagsValidators from '../validators/expense/update-tags.validators';
 import { BaseService } from './base-service.service';
@@ -18,7 +18,7 @@ class ExpenseService extends BaseService {
         this.pagination = new Pagination();
     }
 
-    async getUserExpenses(userId: number, findOpts: ModelFindOpts, pagination: PaginationOpts) {
+    async getUserExpenses(userId: number, findOpts: ModelFindOpts, pagination: PaginationQuery) {
         const query: Prisma.ExpenseFindManyArgs = {};
         query.where = { userId };
 
@@ -65,6 +65,17 @@ class ExpenseService extends BaseService {
             count,
             data,
         };
+    }
+
+    async getUserReportExpenses(
+        userId: number,
+        reportId: number,
+        findOpts: ModelFindOpts,
+        pagination: PaginationQuery,
+    ) {}
+
+    async getUserExpensesById(userId: number, expenses: number[]) {
+        return expenseRepository.findUserExpenses(userId, { id: { in: expenses } });
     }
 
     async getUserExpense(userId: number, expenseId: number) {
