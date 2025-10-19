@@ -111,8 +111,8 @@ export type ModelFindOpts = {
 export type ReportQueryArgs = {
     search?: string;
     name?: string;
-    startDate?: string | DateFilter;
-    endDate?: string | DateFilter;
+    startDate?: DateFilter;
+    endDate?: DateFilter;
     sort?: string;
 };
 
@@ -120,4 +120,30 @@ export type DateFilter = {
     gte?: string;
     lte?: string;
     equals?: string;
+};
+
+export type ExpenseQueryArgs = {
+    search?: string;
+    sort?: string;
+    reportId?: SingleRelationFilter;
+    date?: DateFilter;
+    tags: string[];
+};
+
+export type SingleRelationFilter = {
+    equals?: number;
+    notIn?: number[];
+    not?: number | null;
+    in?: number[];
+};
+
+export type UserQueryArgs = {
+    role?: string;
+    search?: string;
+    sort?: string;
+};
+
+export type TagQueryArgs = {
+    search?: string;
+    sort?: string;
 };

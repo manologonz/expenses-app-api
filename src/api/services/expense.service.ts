@@ -2,10 +2,10 @@ import { Request, Response, NextFunction } from 'express';
 import { validateRequestBody } from '../../utils/helpers';
 import Pagination from '../../utils/pagination';
 import createExpenseValidator from '../validators/expense/create-expense.validator';
-import { Prisma } from '../../../generated/prisma';
+import { Expense, Prisma, Tag } from '../../../generated/prisma';
 import expenseRepository from '../repositories/expense.repository';
 import tagRepository from '../repositories/tag.repository';
-import { HttpError, ModelFindOpts, PaginationQuery } from '../../utils/types';
+import { ExpenseQueryArgs, HttpError, PaginationQuery } from '../../utils/types';
 import updateExpenseValidators from '../validators/expense/update-expense.validators';
 import udpateExpenseTagsValidators from '../validators/expense/update-tags.validators';
 import { BaseService } from './base-service.service';
@@ -14,65 +14,70 @@ class ExpenseService extends BaseService {
     pagination: Pagination;
 
     constructor() {
-        super(['name'], ['tags'], ['name', 'id']);
+        super(['name'], ['tags', 'date', 'reportId'], ['name', 'id']);
         this.pagination = new Pagination();
     }
 
-    async getUserExpenses(userId: number, findOpts: ModelFindOpts, pagination: PaginationQuery) {
-        const query: Prisma.ExpenseFindManyArgs = {};
-        query.where = { userId };
+    async getUserExpenses(userId: number, expenseQueryArgs: ExpenseQueryArgs, pagination: PaginationQuery) {
+        let whereQuery: Prisma.ExpenseWhereInput = {};
 
-        if (findOpts.search) {
-            query.where.OR = this.searchOnFields.map((field) => {
-                return {
-                    [field]: {
-                        contains: findOpts.search,
-                        mode: 'insensitive', // ← Add this for case-insensitive
-                    },
-                };
-            });
-        }
+        const searchQuery = this.parseSearchQuery<Prisma.ExpenseWhereInput>(expenseQueryArgs.search);
+        const sortQuery = this.parseSortQuery(expenseQueryArgs.sort);
+        const dateQuery = this.parseDateFilters(expenseQueryArgs.date);
+        const singleRelationQuery = this.parseSingleRelationQuery(expenseQueryArgs.reportId);
 
-        const filter = this.parseFindOpts(findOpts.filter);
+        console.log(singleRelationQuery);
 
-        if (filter) {
-            query.where = {
-                ...query.where,
-                [filter.field]: filter.value,
+        if (singleRelationQuery) {
+            whereQuery = {
+                ...whereQuery,
+                reportId: singleRelationQuery,
             };
         }
 
-        if (findOpts.sort) {
-            const sortOpts = this.parseFindOpts(findOpts.sort);
-            if (sortOpts && this.sortableFields.includes(sortOpts.field)) {
-                const direction = sortOpts.value.toLowerCase();
-                if (direction === 'asc' || direction === 'desc') {
-                    query.orderBy = {
-                        [sortOpts.field]: direction,
-                    };
-                }
-            }
+        if (searchQuery) {
+            whereQuery = {
+                ...whereQuery,
+                OR: searchQuery,
+            };
         }
 
-        const count = await expenseRepository.expensesCount(query as Prisma.ExpenseCountArgs);
+        if (sortQuery) {
+            whereQuery = {
+                ...whereQuery,
+                reportId: singleRelationQuery,
+            };
+        }
 
-        query.skip = pagination.skip;
-        query.take = pagination.limit;
+        if (dateQuery) {
+            whereQuery = {
+                ...whereQuery,
+                date: dateQuery,
+            };
+        }
 
-        const data = await expenseRepository.findAllExpenses(query);
+        whereQuery = {
+            ...whereQuery,
+            userId,
+        };
+
+        const count = await expenseRepository.expensesCount({ where: whereQuery });
+
+        const data = await expenseRepository.findAllExpenses({
+            where: whereQuery,
+            skip: pagination.skip,
+            take: pagination.limit,
+            include: {
+                tags: true,
+            },
+            orderBy: { [sortQuery.field]: sortQuery.value },
+        });
 
         return {
             count,
             data,
         };
     }
-
-    async getUserReportExpenses(
-        userId: number,
-        reportId: number,
-        findOpts: ModelFindOpts,
-        pagination: PaginationQuery,
-    ) {}
 
     async getUserExpensesById(userId: number, expenses: number[]) {
         return expenseRepository.findUserExpenses(userId, { id: { in: expenses } });
@@ -93,37 +98,40 @@ class ExpenseService extends BaseService {
     }
 
     async updateUserExpenseTags(userId: number, expenseId: number, tags: number[]) {
-        let connectedTags: Prisma.TagsOnPostsWhereUniqueInput[] = [];
+        let connectedTags: Tag[] = [];
 
-        const expense = await this.getUserExpense(userId, expenseId);
+        const expenseToUpdate = await this.getUserExpense(userId, expenseId);
 
-        if (!expense) {
+        if (!expenseToUpdate) {
             throw new HttpError({ message: "Couldn't update expense", statusCode: 404 });
         }
 
-        if (tags) {
-            connectedTags = (await tagRepository.findUserTagsById(userId, tags)).map((tag) => ({
-                id: tag.id,
-            }));
-        }
+        connectedTags = await tagRepository.findUserTagsById(userId, tags);
 
-        return expenseRepository.updateUserExpense(userId, expenseId, { tags: { set: connectedTags } });
+        const expense = await expenseRepository.updateUserExpense(userId, expenseId, {
+            tags: {
+                set: connectedTags.map((tag) => ({
+                    id: tag.id,
+                })),
+            },
+        });
+
+        return {
+            expense,
+            tags: connectedTags,
+        };
     }
 
     async createUserExpense(userId: number, tags: number[], data: Prisma.ExpenseCreateInput) {
-        let connectedTags: Prisma.TagsOnPostsWhereUniqueInput[] = [];
-
-        if (tags) {
-            connectedTags = (await tagRepository.findUserTagsById(userId, tags)).map((tag) => ({
-                id: tag.id,
-            }));
-        }
-
-        console.log(connectedTags);
+        const connectedTags: Tag[] = await tagRepository.findUserTagsById(userId, tags);
 
         return expenseRepository.createExpense({
             ...data,
-            tags: { connect: connectedTags }, // TODO: Fix error when adding tags on creation
+            tags: {
+                connect: connectedTags.map((tag) => ({
+                    id: tag.id,
+                })),
+            },
             user: { connect: { id: userId } },
         });
     }
