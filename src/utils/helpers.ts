@@ -1,6 +1,6 @@
 import { Request } from 'express';
 import { Result, ValidationChain, validationResult } from 'express-validator';
-import { ValidationErrors, HttpError } from './types';
+import { ValidationErrors, HttpError, UserLean } from './types';
 import { RunnableValidationChains } from 'express-validator/lib/middlewares/schema';
 
 export function checkValidationErrors(result: Result) {
@@ -41,4 +41,8 @@ export function textToSlug(text: string): string {
         .replace(/\s+/g, '-') // Replace one or more spaces with a single hyphen
         .replace(/-+/g, '-') // Replace multiple hyphens with a single hyphen
         .replace(/^-+|-+$/g, ''); // Remove leading and trailing hyphens
+}
+
+export function getAuthenticatedUser(req: Request) {
+    return req.state?.user as UserLean;
 }

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { PaginationOpts } from './types';
+import { PaginationQuery } from './types';
 class Pagination {
     page = '1';
     limit: string;
@@ -28,7 +28,7 @@ class Pagination {
         };
     }
 
-    response<T>(values: { pagination: PaginationOpts; count: number; data: T[] }) {
+    response<T>(values: { pagination: PaginationQuery; count: number; data: T[] }) {
         const pageCount = Math.ceil(values.count / values.pagination.limit);
 
         const hasMore = values.pagination.page + 1 < pageCount;
