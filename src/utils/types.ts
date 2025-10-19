@@ -1,6 +1,5 @@
-import { User } from '../../generated/prisma';
+import { User, AccountActivation, Prisma } from '../../generated/prisma';
 import { Request } from 'express';
-import { AccountActivation } from '../../generated/prisma/index';
 
 export class HttpError extends Error {
     statusCode: number;
@@ -97,7 +96,7 @@ export interface ValidationResult {
     detail?: string;
 }
 
-export type PaginationOpts = {
+export type PaginationQuery = {
     limit: number;
     page: number;
     skip: number;
@@ -107,4 +106,18 @@ export type ModelFindOpts = {
     search?: string;
     sort?: string;
     filter?: string;
+};
+
+export type ReportQueryArgs = {
+    search?: string;
+    name?: string;
+    startDate?: string | DateFilter;
+    endDate?: string | DateFilter;
+    sort?: string;
+};
+
+export type DateFilter = {
+    gte?: string;
+    lte?: string;
+    equals?: string;
 };

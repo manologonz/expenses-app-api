@@ -1,6 +1,6 @@
 import { $Enums, Prisma } from '../../../generated/prisma';
 import userRepository from '../repositories/user.repository';
-import { GenerateTokensOpts, ModelFindOpts, ModelResultOptions, PaginationOpts, UserLean } from '../../utils/types';
+import { GenerateTokensOpts, ModelFindOpts, ModelResultOptions, PaginationQuery, UserLean } from '../../utils/types';
 import jwtUtil from '../../utils/jwt-util';
 import accountActivationRepository from '../repositories/account-activation.repository';
 import { NextFunction, Request, Response } from 'express';
@@ -31,7 +31,7 @@ class UserService extends BaseService {
         this.accountActivationMapper = new AccountActivationMapper();
     }
 
-    async getAllUsers(findOpts: ModelFindOpts, pagination: PaginationOpts) {
+    async getAllUsers(findOpts: ModelFindOpts, pagination: PaginationQuery) {
         const query: Prisma.UserFindManyArgs = {};
         query.where = {};
 

@@ -2,11 +2,14 @@ import express from 'express';
 import morgan from 'morgan';
 import helmet from 'helmet';
 import cors from 'cors';
+import qs from 'qs';
 import { notFound, errorHandler } from '../utils/middlewares';
 import AllRoutes from './routes';
 
 // app instantiation
 const app = express();
+
+app.set('query parser', (queryVal: string) => qs.parse(queryVal));
 
 // middlewares
 if (process.env.NODE_ENV !== 'test') {
