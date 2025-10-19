@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { HttpError, UserLean, ModelFindOpts } from '../../../utils/types';
+import { HttpError, UserLean } from '../../../utils/types';
 import expenseService from '../../services/expense.service';
 import { Expense } from '../../../../generated/prisma';
 
@@ -75,25 +75,20 @@ export async function updateExpenseTags(req: Request, res: Response, next: NextF
         throw requestError;
     }
 
-    const updatedExpense = await expenseService.updateUserExpenseTags(
+    const updateResult = await expenseService.updateUserExpenseTags(
         authenticatedUser.id,
         parseInt(expenseId),
         req.body.tags,
     );
 
-    res.status(200).json({ detail: 'Expense updated', data: updatedExpense });
+    res.status(200).json({ detail: 'Expense updated', data: updateResult });
 }
 
 export async function listExpenses(req: Request, res: Response, next: NextFunction) {
     const authenticatedUser = req.state?.user as UserLean;
     const paginationQuery = expenseService.pagination.parse(req);
 
-    const findOpts: ModelFindOpts = {
-        search: req.query.search as string,
-        sort: req.query.sort as string,
-    };
-
-    const expensesData = await expenseService.getUserExpenses(authenticatedUser.id, findOpts, paginationQuery);
+    const expensesData = await expenseService.getUserExpenses(authenticatedUser.id, req.query as any, paginationQuery);
 
     const response = expenseService.pagination.response<Expense>({
         pagination: paginationQuery,

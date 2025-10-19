@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { getAuthenticatedUser } from '../../../utils/helpers';
 import reportService from '../../services/report.service';
-import { HttpError, ReportQueryArgs } from '../../../utils/types';
+import { HttpError } from '../../../utils/types';
 import { Report } from '../../../../generated/prisma';
 
 export async function createReport(req: Request, res: Response, next: NextFunction) {
@@ -19,7 +19,7 @@ export async function listReports(req: Request, res: Response, next: NextFunctio
 
     const paginatedReports = await reportService.getUserReportsPaginated(
         authenticatedUser.id,
-        req.query as ReportQueryArgs,
+        req.query as any,
         paginationQuery,
     );
 
