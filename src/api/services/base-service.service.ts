@@ -1,4 +1,5 @@
-import { DateFilter, SingleRelationFilter } from '../../utils/types';
+import { Prisma } from '../../../generated/prisma';
+import { DateFilter, SingleRelationFilterQuery } from '../../utils/types';
 import dayjs from 'dayjs';
 
 export class BaseService {
@@ -12,9 +13,31 @@ export class BaseService {
         this.sortableFields = sortableFields;
     }
 
-    parseSingleRelationQuery(relationFilter?: SingleRelationFilter) {
-        const allowedRelationFilters = ['equals', 'notIn', 'not'];
-        const filterResult: SingleRelationFilter = {};
+    parseMultipleRelationQuery(key: string, relationFilter?: string[]) {
+        const resultArray: number[] = [];
+
+        if (!relationFilter || relationFilter.length <= 0) {
+            return null;
+        }
+
+        for (let i = 0; i < relationFilter.length; i++) {
+            const listValue = parseInt(relationFilter[i]);
+
+            if (Number.isNaN(listValue)) {
+                return null;
+            }
+
+            resultArray.push(listValue);
+        }
+
+        return resultArray.map((value) => ({
+            [key]: { some: { id: value } },
+        }));
+    }
+
+    parseSingleRelationQuery<T>(relationFilter?: SingleRelationFilterQuery) {
+        const allowedRelationFilters = ['equals', 'not'];
+        const filterResult: Prisma.IntNullableFilter<T> = {};
         let validFilter = false;
 
         if (relationFilter) {
@@ -23,19 +46,24 @@ export class BaseService {
             relationFilterKeys.forEach((key) => {
                 if (allowedRelationFilters.includes(key)) {
                     validFilter = true;
-                    const value = relationFilter[key as keyof SingleRelationFilter];
+                    const paramValue: string = relationFilter[key as keyof SingleRelationFilterQuery] as string;
+                    let finalValue: null | number | undefined;
 
-                    if (value !== undefined) {
-                        filterResult[key as keyof SingleRelationFilter] = value as any;
+                    if (paramValue === 'null') {
+                        finalValue = null;
+                    } else if (!Number.isNaN(parseInt(paramValue))) {
+                        finalValue = parseInt(paramValue);
+                    } else {
+                        finalValue = undefined;
                     }
+
+                    filterResult[key as keyof SingleRelationFilterQuery] = finalValue;
                 }
             });
         }
 
         return validFilter ? filterResult : null;
     }
-
-    parseMultipleRelationQuery() {}
 
     parseSortQuery(option?: string) {
         const [field, value] = option?.split(':') || [];

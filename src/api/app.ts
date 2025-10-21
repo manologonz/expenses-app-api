@@ -3,7 +3,7 @@ import morgan from 'morgan';
 import helmet from 'helmet';
 import cors from 'cors';
 import qs from 'qs';
-import { notFound, errorHandler } from '../utils/middlewares';
+import { notFound, errorHandler, sanitizeQueryParams } from '../utils/middlewares';
 import AllRoutes from './routes';
 
 // app instantiation
@@ -21,7 +21,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // routes
-app.use('/api', AllRoutes);
+app.use('/api', sanitizeQueryParams, AllRoutes);
 
 // error handling
 app.use(notFound);
