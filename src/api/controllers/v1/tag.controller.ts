@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { HttpError, ModelFindOpts, UserLean } from '../../../utils/types';
+import { HttpError, UserLean } from '../../../utils/types';
 import tagService from '../../services/tag.service';
 import { Tag } from '../../../../generated/prisma';
 
@@ -7,12 +7,7 @@ export async function listTags(req: Request, res: Response, next: NextFunction) 
     const authenticatedUser = req.state?.user as UserLean;
     const paginationQuery = tagService.pagination.parse(req);
 
-    const findOpts: ModelFindOpts = {
-        search: req.query.search as string,
-        sort: req.query.sort as string,
-    };
-
-    const tagData = await tagService.getAllUserTags(authenticatedUser.id, findOpts, paginationQuery);
+    const tagData = await tagService.getAllUserTags(authenticatedUser.id, req.query as any, paginationQuery);
 
     const response = tagService.pagination.response<Tag>({
         pagination: paginationQuery,

@@ -46,37 +46,29 @@ model AccountActivation {
 }
 
 model Expense {
-    id          Int           @id @default(autoincrement())
-    description String        @db.VarChar(255)
-    amount      Float         @default(0)
-    date        DateTime?     @db.Date
-    createdAt   DateTime      @default(now())
-    updatedAt   DateTime?     @updatedAt
-    user        User          @relation(fields: [userId], references: [id])
+    id          Int       @id @default(autoincrement())
+    description String    @db.VarChar(255)
+    amount      Float     @default(0)
+    date        DateTime? @db.Date
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime? @updatedAt
+    user        User      @relation(fields: [userId], references: [id])
     userId      Int
-    tags        TagsOnPosts[]
-    Report      Report?       @relation(fields: [reportId], references: [id])
+    tags        Tag[]
+    Report      Report?   @relation(fields: [reportId], references: [id])
     reportId    Int?
 }
 
 model Tag {
-    id        Int           @id @default(autoincrement())
-    name      String        @db.VarChar(255)
-    color     String        @db.VarChar(255)
-    slug      String        @db.VarChar(255)
-    expenses  TagsOnPosts[]
-    createdAt DateTime      @default(now())
-    updatedAt DateTime?     @updatedAt
-    user      User?         @relation(fields: [userId], references: [id])
+    id        Int       @id @default(autoincrement())
+    name      String    @db.VarChar(255)
+    color     String    @db.VarChar(255)
+    slug      String    @db.VarChar(255)
+    expenses  Expense[]
+    createdAt DateTime  @default(now())
+    updatedAt DateTime? @updatedAt
+    user      User?     @relation(fields: [userId], references: [id])
     userId    Int?
-}
-
-model TagsOnPosts {
-    id        Int     @id @default(autoincrement())
-    Expense   Expense @relation(fields: [expenseId], references: [id])
-    expenseId Int
-    Tag       Tag     @relation(fields: [tagId], references: [id])
-    tagId     Int
 }
 
 model Report {

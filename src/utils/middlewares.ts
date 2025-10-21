@@ -63,3 +63,17 @@ export async function isAdmin(req: Request, res: Response, next: NextFunction) {
 
     next();
 }
+
+export function sanitizeQueryParams(req: Request, res: Response, next: NextFunction) {
+    if (req.query) {
+        Object.keys(req.query).forEach((key) => {
+            const value = req.query[key];
+            if (typeof value === 'string' && value.includes('?')) {
+                // Extract the intended value (everything before the malformed '?')
+                req.query[key] = value.split('?')[0];
+                throw new HttpError({ message: 'Malformed url query params', statusCode: 400 });
+            }
+        });
+    }
+    next();
+}

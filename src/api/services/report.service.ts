@@ -15,28 +15,36 @@ class ReportService extends BaseService {
     pagination: Pagination;
 
     constructor() {
-        super(['name'], ['startDate', 'endDate'], ['name', 'id']);
+        super(['name'], [], ['name', 'id']);
         this.pagination = new Pagination();
     }
 
     async getUserReportsPaginated(userId: number, urlQuery: ReportQueryArgs, pagination: PaginationQuery) {
         let whereQuery: Prisma.ReportWhereInput = {};
 
-        if (urlQuery.startDate) {
+        const startDateFilter = this.parseDateFilters(urlQuery.startDate);
+        const endDateFilter = this.parseDateFilters(urlQuery.endDate);
+        const sorting = this.parseSortQuery(urlQuery.sort);
+        const searchQuery = this.parseSearchQuery<Prisma.ReportWhereInput>(urlQuery.search);
+
+        if (startDateFilter) {
             whereQuery = {
-                startDate: urlQuery.startDate,
+                startDate: startDateFilter,
             };
         }
 
-        if (urlQuery.endDate) {
+        if (endDateFilter) {
             whereQuery = {
                 ...whereQuery,
-                endDate: urlQuery.endDate,
+                endDate: endDateFilter,
             };
         }
 
-        if (urlQuery.search) {
-            whereQuery = this.getSearchQuery(urlQuery.search, whereQuery);
+        if (searchQuery) {
+            whereQuery = {
+                ...whereQuery,
+                OR: searchQuery,
+            };
         }
 
         whereQuery = {
@@ -50,6 +58,10 @@ class ReportService extends BaseService {
             where: whereQuery,
             skip: pagination.skip,
             take: pagination.limit,
+
+            orderBy: {
+                [sorting.field]: sorting.value,
+            },
         });
 
         return {

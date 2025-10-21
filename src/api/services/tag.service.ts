@@ -4,7 +4,7 @@ import tagRepository from '../repositories/tag.repository';
 import createTagValidator from '../validators/tag/create-tag.validator';
 import { Request, Response, NextFunction } from 'express';
 import updateTagValidator from '../validators/tag/update-tag.validator';
-import { HttpError, ModelFindOpts, PaginationQuery } from '../../utils/types';
+import { HttpError, PaginationQuery, TagQueryArgs } from '../../utils/types';
 import Pagination from '../../utils/pagination';
 import { BaseService } from './base-service.service';
 
@@ -37,47 +37,32 @@ class TagService extends BaseService {
         return tagRepository.updateUserTag(userId, tagId, data);
     }
 
-    async getAllUserTags(userId: number, findOpts: ModelFindOpts, pagination: PaginationQuery) {
-        const query: Prisma.TagFindManyArgs = {};
-        query.where = { userId };
+    async getAllUserTags(userId: number, tagQueryArgs: TagQueryArgs, pagination: PaginationQuery) {
+        let whereQuery: Prisma.TagWhereInput = {};
 
-        if (findOpts.search) {
-            query.where.OR = this.searchOnFields.map((field) => {
-                return {
-                    [field]: {
-                        contains: findOpts.search,
-                        mode: 'insensitive', // ← Add this for case-insensitive
-                    },
-                };
-            });
-        }
+        const searchQuery = this.parseSearchQuery<Prisma.TagWhereInput>(tagQueryArgs.search);
+        const sortQuery = this.parseSortQuery(tagQueryArgs.sort);
 
-        const filter = this.parseFindOpts(findOpts.filter);
-
-        if (filter) {
-            query.where = {
-                ...query.where,
-                [filter.field]: filter.value,
+        if (searchQuery) {
+            whereQuery = {
+                ...whereQuery,
+                OR: searchQuery,
             };
         }
 
-        if (findOpts.sort) {
-            const sortOpts = this.parseFindOpts(findOpts.sort);
-            if (sortOpts && this.sortableFields.includes(sortOpts.field)) {
-                const direction = sortOpts.value.toLowerCase();
-                if (direction === 'asc' || direction === 'desc') {
-                    query.orderBy = {
-                        [sortOpts.field]: direction,
-                    };
-                }
-            }
-        }
+        whereQuery = {
+            ...whereQuery,
+            userId,
+        };
 
-        const count = await tagRepository.countTags(query as Prisma.TagCountArgs);
-        query.skip = pagination.skip;
-        query.take = pagination.limit;
+        const count = await tagRepository.countTags({ where: whereQuery });
 
-        const data = await tagRepository.findAllTags(query);
+        const data = await tagRepository.findAllTags({
+            where: whereQuery,
+            skip: pagination.skip,
+            take: pagination.limit,
+            orderBy: { [sortQuery.field]: sortQuery.value },
+        });
 
         return {
             count,

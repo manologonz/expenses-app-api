@@ -1,6 +1,6 @@
 import { $Enums, Prisma } from '../../../generated/prisma';
 import userRepository from '../repositories/user.repository';
-import { GenerateTokensOpts, ModelFindOpts, ModelResultOptions, PaginationQuery, UserLean } from '../../utils/types';
+import { GenerateTokensOpts, ModelResultOptions, PaginationQuery, UserLean, UserQueryArgs } from '../../utils/types';
 import jwtUtil from '../../utils/jwt-util';
 import accountActivationRepository from '../repositories/account-activation.repository';
 import { NextFunction, Request, Response } from 'express';
@@ -21,57 +21,45 @@ class UserService extends BaseService {
     accountActivationMapper: AccountActivationMapper;
 
     constructor() {
-        super(
-            ['username', 'firstName', 'lastName', 'email'],
-            ['role'],
-            ['username', 'firstName', 'lastName', 'role', 'id'],
-        );
+        super(['username', 'firstName', 'lastName', 'email'], [], ['username', 'firstName', 'lastName', 'role', 'id']);
         this.pagination = new Pagination();
         this.userMapper = new UserMapper();
         this.accountActivationMapper = new AccountActivationMapper();
     }
 
-    async getAllUsers(findOpts: ModelFindOpts, pagination: PaginationQuery) {
-        const query: Prisma.UserFindManyArgs = {};
-        query.where = {};
+    async getAllUsers(findOpts: UserQueryArgs, pagination: PaginationQuery) {
+        let whereQuery: Prisma.UserWhereInput = {};
 
-        if (findOpts.search) {
-            query.where.OR = this.searchOnFields.map((field) => {
-                return {
-                    [field]: {
-                        contains: findOpts.search,
-                        mode: 'insensitive', // ← Add this for case-insensitive
-                    },
-                };
-            });
-        }
+        const searchQuery = this.parseSearchQuery<Prisma.UserWhereInput>(findOpts.search);
+        const sortQuery = this.parseSortQuery(findOpts.sort);
 
-        const filter = this.parseFindOpts(findOpts.filter);
-
-        if (filter) {
-            query.where = {
-                ...query.where,
-                [filter.field]: filter.value,
+        if (searchQuery) {
+            whereQuery = {
+                ...whereQuery,
+                OR: searchQuery,
             };
         }
 
-        if (findOpts.sort) {
-            const sortOpts = this.parseFindOpts(findOpts.sort);
-            if (sortOpts && this.sortableFields.includes(sortOpts.field)) {
-                const direction = sortOpts.value.toLowerCase();
-                if (direction === 'asc' || direction === 'desc') {
-                    query.orderBy = {
-                        [sortOpts.field]: direction,
-                    };
-                }
-            }
+        if (
+            findOpts.role &&
+            [$Enums.Role.ADMINISTRATOR as string, $Enums.Role.USER as string].includes(findOpts?.role)
+        ) {
+            whereQuery = {
+                ...whereQuery,
+                role: findOpts.role as $Enums.Role,
+            };
         }
 
-        const count = await userRepository.countUsers(query as Prisma.UserCountArgs);
-        query.skip = pagination.skip;
-        query.take = pagination.limit;
+        const count = await userRepository.countUsers({ where: whereQuery });
 
-        const data = (await userRepository.findAllUsers(query)).map(this.userMapper.toLeanModel);
+        const data = (
+            await userRepository.findAllUsers({
+                where: whereQuery,
+                skip: pagination.skip,
+                take: pagination.limit,
+                orderBy: { [sortQuery.field]: sortQuery.value },
+            })
+        ).map(this.userMapper.toLeanModel);
 
         return {
             data,
