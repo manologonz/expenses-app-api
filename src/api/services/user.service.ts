@@ -21,11 +21,7 @@ class UserService extends BaseService {
     accountActivationMapper: AccountActivationMapper;
 
     constructor() {
-        super(
-            ['username', 'firstName', 'lastName', 'email'],
-            ['role'],
-            ['username', 'firstName', 'lastName', 'role', 'id'],
-        );
+        super(['username', 'firstName', 'lastName', 'email'], [], ['username', 'firstName', 'lastName', 'role', 'id']);
         this.pagination = new Pagination();
         this.userMapper = new UserMapper();
         this.accountActivationMapper = new AccountActivationMapper();

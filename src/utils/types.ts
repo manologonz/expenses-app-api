@@ -125,16 +125,14 @@ export type DateFilter = {
 export type ExpenseQueryArgs = {
     search?: string;
     sort?: string;
-    reportId?: SingleRelationFilter;
+    reportId?: SingleRelationFilterQuery;
     date?: DateFilter;
     tags: string[];
 };
 
-export type SingleRelationFilter = {
-    equals?: number;
-    notIn?: number[];
-    not?: number | null;
-    in?: number[];
+export type SingleRelationFilterQuery = {
+    equals?: string;
+    not?: string;
 };
 
 export type UserQueryArgs = {

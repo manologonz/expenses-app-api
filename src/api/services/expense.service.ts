@@ -14,7 +14,7 @@ class ExpenseService extends BaseService {
     pagination: Pagination;
 
     constructor() {
-        super(['name'], ['tags', 'date', 'reportId'], ['name', 'id']);
+        super(['description'], [], ['name', 'id']);
         this.pagination = new Pagination();
     }
 
@@ -24,16 +24,8 @@ class ExpenseService extends BaseService {
         const searchQuery = this.parseSearchQuery<Prisma.ExpenseWhereInput>(expenseQueryArgs.search);
         const sortQuery = this.parseSortQuery(expenseQueryArgs.sort);
         const dateQuery = this.parseDateFilters(expenseQueryArgs.date);
-        const singleRelationQuery = this.parseSingleRelationQuery(expenseQueryArgs.reportId);
-
-        console.log(singleRelationQuery);
-
-        if (singleRelationQuery) {
-            whereQuery = {
-                ...whereQuery,
-                reportId: singleRelationQuery,
-            };
-        }
+        const singleRelationQuery = this.parseSingleRelationQuery<'Expense'>(expenseQueryArgs.reportId);
+        const tagsQuery = this.parseMultipleRelationQuery('tags', expenseQueryArgs.tags);
 
         if (searchQuery) {
             whereQuery = {
@@ -42,7 +34,7 @@ class ExpenseService extends BaseService {
             };
         }
 
-        if (sortQuery) {
+        if (singleRelationQuery) {
             whereQuery = {
                 ...whereQuery,
                 reportId: singleRelationQuery,
@@ -56,10 +48,19 @@ class ExpenseService extends BaseService {
             };
         }
 
+        if (tagsQuery) {
+            whereQuery = {
+                ...whereQuery,
+                AND: tagsQuery,
+            };
+        }
+
         whereQuery = {
             ...whereQuery,
             userId,
         };
+
+        console.log(tagsQuery);
 
         const count = await expenseRepository.expensesCount({ where: whereQuery });
 
