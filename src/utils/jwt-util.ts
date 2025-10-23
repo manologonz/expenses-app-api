@@ -62,8 +62,10 @@ export class JwtUtil {
     }
 
     getAccessTokenExpirationDate() {
-        const unitRegex =
-            /(Years?|Yrs?|Y|Weeks?|W|Days?|D|Hours?|Hrs?|Hr|H|Minutes?|Mins?|Min|M|Seconds?|Secs?|Sec|s|Milliseconds?|Msecs?|Msec|Ms)/;
+        const unitRegex = new RegExp(
+            '(Years?|Yrs?|Y|Weeks?|W|Days?|D|Hours?|Hrs?|Hr|H|Minutes?|Mins?|Min|M|Seconds?|Secs?|Sec|s|Milliseconds?|Msecs?|Msec|Ms)',
+        );
+
         const match = this.accessTokenExpiration.match(unitRegex);
 
         const amount = (match?.length ? match[0] : 'D').toLocaleLowerCase() as ManipulateType;
@@ -73,8 +75,10 @@ export class JwtUtil {
         return dayjs().add(parseInt(value), amount).toDate();
     }
     getRefreshTokenExpirationDate() {
-        const unitRegex =
-            /(Years?|Yrs?|Y|Weeks?|W|Days?|D|Hours?|Hrs?|Hr|H|Minutes?|Mins?|Min|M|Seconds?|Secs?|Sec|s|Milliseconds?|Msecs?|Msec|Ms)/;
+        const unitRegex = new RegExp(
+            '(Years?|Yrs?|Y|Weeks?|W|Days?|D|Hours?|Hrs?|Hr|H|Minutes?|Mins?|Min|M|Seconds?|Secs?|Sec|s|Milliseconds?|Msecs?|Msec|Ms)',
+        );
+
         const match = this.refreshTokenExpiration.match(unitRegex);
 
         const amount = (match?.length ? match[0] : 'D').toLocaleLowerCase() as ManipulateType;
@@ -126,12 +130,14 @@ export class JwtUtil {
     }
 
     getRefreshToken(req: Request) {
-        return (req.cookies['refresh-token'] as string) || undefined;
+        return req.query?.token?.toString() || undefined;
     }
 
     static getExpirationValue(value: string): JwtExpiration {
-        const unitRegex =
-            /(Years?|Yrs?|Y|Weeks?|W|Days?|D|Hours?|Hrs?|Hr|H|Minutes?|Mins?|Min|M|Seconds?|Secs?|Sec|s|Milliseconds?|Msecs?|Msec|Ms)/i;
+        const unitRegex = new RegExp(
+            '(Years?|Yrs?|Y|Weeks?|W|Days?|D|Hours?|Hrs?|Hr|H|Minutes?|Mins?|Min|M|Seconds?|Secs?|Sec|s|Milliseconds?|Msecs?|Msec|Ms)',
+            'i',
+        );
 
         const simpleNumber = /^\d+$/;
         const numberWithUnit = new RegExp(`^\\d+\\s*${unitRegex.source}$`, 'i');

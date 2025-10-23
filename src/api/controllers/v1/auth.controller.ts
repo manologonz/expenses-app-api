@@ -6,7 +6,11 @@ import { HttpError } from '../../../utils/types';
 export async function login(req: Request, res: Response, next: NextFunction) {
     const { email, password } = req.body;
 
+    console.log(email, password);
+
     const result = await userService.checkCredentials(email, password);
+
+    console.log(result);
 
     if (!result.valid || !result.user) {
         res.status(400).json({
