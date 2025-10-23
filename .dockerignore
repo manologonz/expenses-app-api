@@ -1,0 +1,79 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs
+dist/
+build/
+*.tgz
+
+# Generated files
+generated/prisma
+
+# Testing
+coverage/
+.nyc_output
+*.test.ts
+*.spec.ts
+**/__tests__/
+**/__mocks__/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Documentation
+README.md
+LICENCE
+LICENSE
+*.md
+docs/
+
+# IDE and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+.DS_Store
+
+# Environment files
+.env
+.env.local
+.env.*.local
+.example.env
+
+# Logs
+logs/
+*.log
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Docker files (no need to copy into container)
+Dockerfile
+Dockerfile.dev
+docker-compose.yml
+docker-compose.dev.yml
+.dockerignore
+
+# Misc
+.cache/
+tmp/
+temp/
+.tmp/
+certs/
+.eslintcache
+.prettierignore
+.prettierrc
+eslint.config.js
