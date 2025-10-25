@@ -1,20 +1,31 @@
 import { ACCESS_TOKEN_EXPIRATION, HASH_SALT, JWT_ALGORITHM, REFRESH_TOKEN_EXPIRATION } from './constants';
 import bcrypt from 'bcryptjs';
 import keygen from './keygen';
-import { CustomJwtPayload, UserLean, GenerateTokensOpts, JwtExpiration, JwtValidationData } from '../utils/types';
+import {
+    CustomJwtPayload,
+    GenerateTokensOpts,
+    JwtExpiration,
+    JwtValidationData,
+    UserTokenPayload,
+} from '../utils/types';
 import jwt, { SignOptions, TokenExpiredError, Algorithm } from 'jsonwebtoken';
 import dayjs, { ManipulateType } from 'dayjs';
 import { Request } from 'express';
+import UserMapper from '../api/mappers/user.mapper';
+import { User } from '../../generated/prisma';
 
 export class JwtUtil {
     private accessTokenExpiration: JwtExpiration;
     private refreshTokenExpiration: JwtExpiration;
     private hashSalt: number;
+    private userMapper: UserMapper;
 
     constructor() {
         this.accessTokenExpiration = JwtUtil.getExpirationValue(ACCESS_TOKEN_EXPIRATION);
         this.refreshTokenExpiration = JwtUtil.getExpirationValue(REFRESH_TOKEN_EXPIRATION);
         this.hashSalt = HASH_SALT;
+        this.userMapper = new UserMapper();
+
         this.initKeygen();
     }
 
@@ -40,6 +51,7 @@ export class JwtUtil {
             expiresIn: this.accessTokenExpiration,
         };
 
+        console.log('payload', payload);
         const accessToken = jwt.sign(payload, accessTokenKeys.key, jwtOptions);
 
         let refreshToken = undefined;
@@ -49,7 +61,7 @@ export class JwtUtil {
             jwtOptions.keyid = refreshTokenKeys.keyId;
             jwtOptions.expiresIn = this.refreshTokenExpiration;
 
-            refreshToken = jwt.sign({ id: payload.id }, refreshTokenKeys.key, jwtOptions);
+            refreshToken = jwt.sign(payload, refreshTokenKeys.key, jwtOptions);
             refreshExpiration = this.getRefreshTokenExpirationDate();
         }
 
@@ -110,7 +122,8 @@ export class JwtUtil {
         }
 
         try {
-            validationData.data = jwt.verify(token, key) as UserLean;
+            const tokenPayload = jwt.verify(token, key) as UserTokenPayload;
+            validationData.data = this.userMapper.toLeanModel(tokenPayload);
         } catch (error) {
             validationData.valid = false;
             if (error instanceof TokenExpiredError) {
@@ -130,7 +143,7 @@ export class JwtUtil {
     }
 
     getRefreshToken(req: Request) {
-        return req.query?.token?.toString() || undefined;
+        return (req.cookies['refresh-token'] as string) || undefined;
     }
 
     static getExpirationValue(value: string): JwtExpiration {

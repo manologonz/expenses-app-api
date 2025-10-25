@@ -3,6 +3,7 @@ import morgan from 'morgan';
 import helmet from 'helmet';
 import cors from 'cors';
 import qs from 'qs';
+import cookieParser from 'cookie-parser';
 import { notFound, errorHandler, sanitizeQueryParams } from '../utils/middlewares';
 import AllRoutes from './routes';
 
@@ -10,7 +11,6 @@ import AllRoutes from './routes';
 const app = express();
 
 app.set('query parser', (queryVal: string) => qs.parse(queryVal));
-
 // middlewares
 if (process.env.NODE_ENV !== 'test') {
     app.use(morgan('dev'));
@@ -19,6 +19,7 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // routes
 app.use('/api', sanitizeQueryParams, AllRoutes);

@@ -1,8 +1,8 @@
 import { User } from '../../../generated/prisma';
-import { UserLean } from '../../utils/types';
+import { UserLean, UserTokenPayload } from '../../utils/types';
 
 export default class UserMapper {
-    toLeanModel(data: User): UserLean {
+    toLeanModel(data: User | UserTokenPayload): UserLean {
         return {
             id: data.id,
             firstName: data.firstName,

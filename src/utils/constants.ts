@@ -10,6 +10,7 @@ export const ENVIRONMENTS = {
     STAGING: 'staging',
     PRODUCTION: 'production',
 };
+export const ENABLE_SECURE_COOKIE = NODE_ENV === ENVIRONMENTS.PRODUCTION;
 
 // Auth
 export const PASSWORD_LENGTH = 8;
