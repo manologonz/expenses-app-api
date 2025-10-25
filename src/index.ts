@@ -3,7 +3,7 @@ import app from './api/app';
 import { PORT, HOST } from './utils/constants';
 import { databaseCheckHealth } from './db/index';
 
-(async function () {
+void (async function () {
     try {
         await databaseCheckHealth();
         app.listen(PORT, HOST, () => {

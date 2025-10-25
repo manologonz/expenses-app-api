@@ -26,6 +26,10 @@ export type ValidationErrors = {
 export interface CustomJwtPayload extends Omit<User, 'password'> {}
 
 export interface UserLean extends Omit<User, 'password'> {}
+export interface UserTokenPayload extends Omit<User, 'password'> {
+    exp: number;
+    iat: number;
+}
 
 export interface AccountActivationLean extends Omit<AccountActivation, 'id'> {}
 

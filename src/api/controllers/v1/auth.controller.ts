@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 import userService from '../../services/user.service';
 import jwtUtil from '../../../utils/jwt-util';
 import { HttpError } from '../../../utils/types';
+import { ENABLE_SECURE_COOKIE } from '../../../utils/constants';
 
 export async function login(req: Request, res: Response, next: NextFunction) {
     const { email, password } = req.body;
@@ -24,7 +25,18 @@ export async function login(req: Request, res: Response, next: NextFunction) {
         getRefresh: true,
     });
 
-    res.json(tokens);
+    if (tokens.refreshToken && tokens.refreshExpiration) {
+        res.cookie('refresh-token', tokens.refreshToken, {
+            secure: ENABLE_SECURE_COOKIE,
+            httpOnly: true,
+            expires: tokens.refreshExpiration,
+        });
+    }
+
+    res.json({
+        accessToken: tokens.accessToken,
+        accessTokenExpiration: tokens.accessTokenExpiration,
+    });
 }
 
 export async function refreshToken(req: Request, res: Response, next: NextFunction) {
