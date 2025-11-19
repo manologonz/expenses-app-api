@@ -18,7 +18,7 @@ class TagRepository {
     }
 
     findUserTag(userId: number, tagId: number) {
-        return this.findAllTags({ where: { id: tagId, userId } });
+        return prisma.tag.findFirst({ where: { id: tagId, userId } });
     }
 
     findAllTags(query: Prisma.TagFindManyArgs) {

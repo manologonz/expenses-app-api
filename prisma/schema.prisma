@@ -67,8 +67,13 @@ model Tag {
     expenses  Expense[]
     createdAt DateTime  @default(now())
     updatedAt DateTime? @updatedAt
-    user      User?     @relation(fields: [userId], references: [id])
-    userId    Int?
+
+    user   User? @relation(fields: [userId], references: [id])
+    userId Int?
+
+    parentId Int?
+    parent   Tag?  @relation("parent", fields: [parentId], references: [id])
+    children Tag[] @relation("parent")
 }
 
 model Report {
