@@ -21,11 +21,11 @@ export async function createTag(req: Request, res: Response, next: NextFunction)
     const authenticatedUser = req.state?.user as UserLean;
     const data = {
         name: req.body.name,
-        slug: tagService.slugify(req.body.name),
+        slug: req.body.name,
         color: req.body.color,
     };
 
-    const newTag = await tagService.createUserTag(authenticatedUser.id, data);
+    const newTag = await tagService.createUserTag(authenticatedUser.id, data, req.body.parent);
 
     res.status(200).json({ detail: 'Tag created', data: newTag });
 }
@@ -39,7 +39,13 @@ export async function udpateTag(req: Request, res: Response, next: NextFunction)
         throw requestError;
     }
 
-    const updatedTag = await tagService.updateUserTag(authenticatedUser.id, parseInt(tagId), req.body);
+    const data = {
+        name: req.body.name,
+        slug: req.body.name,
+        color: req.body.color,
+    };
+
+    const updatedTag = await tagService.updateUserTag(authenticatedUser.id, parseInt(tagId), data);
 
     res.status(200).json({ message: 'Tag updated', data: updatedTag });
 }

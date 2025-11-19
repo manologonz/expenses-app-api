@@ -3,6 +3,7 @@ import { hexColorMessage, requiredMessage } from '../messages';
 import tagService from '../../services/tag.service';
 import { UserLean, HttpError } from '../../../utils/types';
 
+// TODO: refactor: avoid validator duplicates ref: uniqueTagSlug
 export const uniqueTagSlug: CustomValidator = async (input, { req }) => {
     const slug = tagService.slugify(input);
     const user = req.state?.user as UserLean;
