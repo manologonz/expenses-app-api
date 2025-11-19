@@ -78,8 +78,34 @@ class TagService extends BaseService {
         return tagRepository.findUserTag(userId, tagId);
     }
 
-    createUserTag(userId: number, data: Prisma.TagCreateInput) {
-        return tagRepository.createTag({ ...data, user: { connect: { id: userId } } });
+    async createUserTag(userId: number, data: Prisma.TagCreateInput, parentTag?: number) {
+        const dataToSave: Prisma.TagCreateInput = {
+            name: data.name,
+            slug: this.slugify(data.slug),
+            color: data.color,
+            user: { connect: { id: userId } },
+        };
+
+        const parentError = new HttpError({ message: 'Parent tag not found', statusCode: 404 });
+
+        if (parentTag) {
+            const parentExists = await this.getUserTagById(userId, parentTag);
+
+            if (!parentExists) {
+                throw parentError;
+            }
+
+            if (parentExists.parentId) {
+                parentError.message = 'Parent exceeded children depth';
+                parentError.statusCode = 400;
+
+                throw parentError;
+            }
+
+            dataToSave.parent = { connect: { id: parentTag } };
+        }
+
+        return tagRepository.createTag(dataToSave);
     }
 
     getUserTagCountBySlug(userId: number, slug: string, sameId?: number) {
@@ -92,10 +118,12 @@ class TagService extends BaseService {
         return tagRepository.countTags(query);
     }
 
-    isTagCreated(userId: number, tagId: number) {
+    async isTagCreated(userId: number, tagId: number) {
         const query: Prisma.TagCountArgs = { where: { userId, id: tagId } };
 
-        return tagRepository.countTags(query);
+        const count = await tagRepository.countTags(query);
+
+        return count > 0;
     }
 
     slugify(word: string) {

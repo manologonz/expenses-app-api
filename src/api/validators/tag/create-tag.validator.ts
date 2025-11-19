@@ -1,8 +1,9 @@
 import { checkSchema, CustomValidator } from 'express-validator';
-import { hexColorMessage, requiredMessage } from '../messages';
+import { hexColorMessage, intMessage, requiredMessage } from '../messages';
 import { HttpError, UserLean } from '../../../utils/types';
 import tagService from '../../services/tag.service';
 
+// TODO: refactor: avoid validator duplicates ref: uniqueTagSlug
 export const uniqueTagSlug: CustomValidator = async (input, { req }) => {
     const slug = tagService.slugify(input);
     const user = req.state?.user as UserLean;
@@ -34,6 +35,15 @@ export default checkSchema({
         },
         isHexColor: {
             errorMessage: hexColorMessage('color'),
+        },
+    },
+    parent: {
+        optional: true,
+        exists: {
+            errorMessage: requiredMessage('parent'),
+        },
+        isInt: {
+            errorMessage: intMessage('parent'),
         },
     },
 });
