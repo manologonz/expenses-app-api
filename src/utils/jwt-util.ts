@@ -41,7 +41,7 @@ export class JwtUtil {
         return bcrypt.compare(password, comparePassword);
     }
 
-    generateTokens(payload: CustomJwtPayload, opts?: GenerateTokensOpts) {
+    generateTokens(userPayload: CustomJwtPayload, opts?: GenerateTokensOpts) {
         const accessTokenKeys = keygen.getSigningKey();
         const refreshTokenKeys = keygen.getSigningKey();
 
@@ -51,8 +51,7 @@ export class JwtUtil {
             expiresIn: this.accessTokenExpiration,
         };
 
-        console.log('payload', payload);
-        const accessToken = jwt.sign(payload, accessTokenKeys.key, jwtOptions);
+        const accessToken = jwt.sign(userPayload, accessTokenKeys.key, jwtOptions);
 
         let refreshToken = undefined;
         let refreshExpiration = undefined;
@@ -61,11 +60,12 @@ export class JwtUtil {
             jwtOptions.keyid = refreshTokenKeys.keyId;
             jwtOptions.expiresIn = this.refreshTokenExpiration;
 
-            refreshToken = jwt.sign(payload, refreshTokenKeys.key, jwtOptions);
+            refreshToken = jwt.sign(userPayload, refreshTokenKeys.key, jwtOptions);
             refreshExpiration = this.getRefreshTokenExpirationDate();
         }
 
         return {
+            user: userPayload,
             accessToken,
             accessTokenExpiration: this.getAccessTokenExpirationDate(),
             refreshToken,

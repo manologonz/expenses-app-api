@@ -11,8 +11,6 @@ export async function login(req: Request, res: Response, next: NextFunction) {
 
     const result = await userService.checkCredentials(email, password);
 
-    console.log(result);
-
     if (!result.valid || !result.user) {
         res.status(400).json({
             message: 'Username or password incorrect',
@@ -34,6 +32,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
     }
 
     res.json({
+        user: tokens.user,
         accessToken: tokens.accessToken,
         accessTokenExpiration: tokens.accessTokenExpiration,
     });
@@ -65,9 +64,11 @@ export async function refreshToken(req: Request, res: Response, next: NextFuncti
         return;
     }
 
-    const { accessToken } = await userService.generateUserAccess(tokenValidation.data);
+    const { accessToken, accessTokenExpiration, user } = await userService.generateUserAccess(tokenValidation.data);
 
     res.status(200).json({
+        user,
         access_token: accessToken,
+        accessTokenExpiration,
     });
 }

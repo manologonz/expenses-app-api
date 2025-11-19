@@ -23,7 +23,7 @@ export type ValidationErrors = {
     [field: string]: string[];
 };
 
-export interface CustomJwtPayload extends Omit<User, 'password'> {}
+export interface CustomJwtPayload extends Omit<User, 'password' | 'updatedAt' | 'createdAt'> {}
 
 export interface UserLean extends Omit<User, 'password'> {}
 export interface UserTokenPayload extends Omit<User, 'password'> {
