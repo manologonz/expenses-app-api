@@ -116,7 +116,18 @@ class UserService extends BaseService {
     }
 
     async generateUserAccess(userData: UserLean, opts?: GenerateTokensOpts) {
-        return jwtUtil.generateTokens(userData, opts);
+        return jwtUtil.generateTokens(
+            {
+                id: userData.id,
+                firstName: userData.firstName,
+                lastName: userData.lastName,
+                username: userData.username,
+                role: userData.role,
+                email: userData.email,
+                active: userData.active,
+            },
+            opts,
+        );
     }
 
     async checkCredentials(email: string, password: string) {

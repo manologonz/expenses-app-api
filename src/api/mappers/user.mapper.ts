@@ -15,4 +15,6 @@ export default class UserMapper {
             updatedAt: data.updatedAt,
         };
     }
+
+    toJWTPayload() {}
 }

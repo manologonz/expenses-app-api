@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { validateRequestBody } from '../../utils/helpers';
 import Pagination from '../../utils/pagination';
 import createExpenseValidator from '../validators/expense/create-expense.validator';
-import { Expense, Prisma, Tag } from '../../../generated/prisma';
+import { Prisma, Tag } from '../../../generated/prisma';
 import expenseRepository from '../repositories/expense.repository';
 import tagRepository from '../repositories/tag.repository';
 import { ExpenseQueryArgs, HttpError, PaginationQuery } from '../../utils/types';
@@ -14,7 +14,7 @@ class ExpenseService extends BaseService {
     pagination: Pagination;
 
     constructor() {
-        super(['description'], [], ['name', 'id']);
+        super(['description'], [], ['id', 'date']);
         this.pagination = new Pagination();
     }
 
