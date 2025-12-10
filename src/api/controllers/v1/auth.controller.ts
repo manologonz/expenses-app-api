@@ -7,8 +7,6 @@ import { ENABLE_SECURE_COOKIE } from '../../../utils/constants';
 export async function login(req: Request, res: Response, next: NextFunction) {
     const { email, password } = req.body;
 
-    console.log(email, password);
-
     const result = await userService.checkCredentials(email, password);
 
     if (!result.valid || !result.user) {

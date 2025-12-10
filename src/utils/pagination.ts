@@ -24,14 +24,14 @@ class Pagination {
         return {
             page,
             limit,
-            skip: page === 1 ? 0 : page * limit,
+            skip: page === 1 ? 0 : (page - 1) * limit,
         };
     }
 
     response<T>(values: { pagination: PaginationQuery; count: number; data: T[] }) {
         const pageCount = Math.ceil(values.count / values.pagination.limit);
 
-        const hasMore = values.pagination.page + 1 < pageCount;
+        const hasMore = values.pagination.page + 1 <= pageCount;
 
         return {
             count: values.count,
