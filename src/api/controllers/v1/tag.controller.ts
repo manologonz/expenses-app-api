@@ -1,9 +1,9 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import { HttpError, UserLean } from '../../../utils/types';
 import tagService from '../../services/tag.service';
 import { Tag } from '../../../../generated/prisma';
 
-export async function listTags(req: Request, res: Response, next: NextFunction) {
+export async function listTags(req: Request, res: Response) {
     const authenticatedUser = req.state?.user as UserLean;
     const paginationQuery = tagService.pagination.parse(req);
 
@@ -17,7 +17,7 @@ export async function listTags(req: Request, res: Response, next: NextFunction) 
     res.status(200).json(response);
 }
 
-export async function createTag(req: Request, res: Response, next: NextFunction) {
+export async function createTag(req: Request, res: Response) {
     const authenticatedUser = req.state?.user as UserLean;
     const data = {
         name: req.body.name,
@@ -30,7 +30,7 @@ export async function createTag(req: Request, res: Response, next: NextFunction)
     res.status(200).json({ detail: 'Tag created', data: newTag });
 }
 
-export async function udpateTag(req: Request, res: Response, next: NextFunction) {
+export async function udpateTag(req: Request, res: Response) {
     const tagId = req.params.tagId;
     const authenticatedUser = req.state?.user as UserLean;
     const requestError = new HttpError({ message: 'Invalid tag identifier', statusCode: 400 });
@@ -50,7 +50,7 @@ export async function udpateTag(req: Request, res: Response, next: NextFunction)
     res.status(200).json({ message: 'Tag updated', data: updatedTag });
 }
 
-export async function deleteTag(req: Request, res: Response, next: NextFunction) {
+export async function deleteTag(req: Request, res: Response) {
     const authenticatedUser = req.state?.user as UserLean;
     const tagId = req.params.tagId;
     const requestError = new HttpError({ message: 'Invalid tag identifier', statusCode: 400 });
@@ -64,7 +64,7 @@ export async function deleteTag(req: Request, res: Response, next: NextFunction)
     res.status(200).json({ detail: 'Tag deleted', data: deletedTag });
 }
 
-export async function getTag(req: Request, res: Response, next: NextFunction) {
+export async function getTag(req: Request, res: Response) {
     const authenticatedUser = req.state?.user as UserLean;
     const tagId = req.params.tagId;
     const requestError = new HttpError({ message: 'Invalid tag identifier', statusCode: 400 });
