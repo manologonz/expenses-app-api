@@ -22,7 +22,7 @@ export async function createTag(req: Request, res: Response) {
     const data = {
         name: req.body.name,
         slug: req.body.name,
-        color: req.body.color,
+        color: req.body.color || null,
     };
 
     const newTag = await tagService.createUserTag(authenticatedUser.id, data, req.body.parent);
