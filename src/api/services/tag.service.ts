@@ -21,7 +21,7 @@ class TagService extends BaseService {
 
         if (data.name) {
             const newSlug = this.slugify(data.name as string);
-            const uniqueSlug = await this.getUserTagCountBySlug(userId, newSlug);
+            const uniqueSlug = await this.getUserTagCountBySlug(userId, newSlug, tagId);
 
             if (uniqueSlug > 0) {
                 throw new HttpError({ message: 'Tag already exists', statusCode: 400 });
