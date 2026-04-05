@@ -40,6 +40,10 @@ class TagService extends BaseService {
     async getAllUserTags(userId: number, tagQueryArgs: TagQueryArgs, pagination: PaginationQuery) {
         let whereQuery: Prisma.TagWhereInput = {};
 
+        if (tagQueryArgs?.depth !== 'all') {
+            whereQuery.parent = { is: null };
+        }
+
         const searchQuery = this.parseSearchQuery<Prisma.TagWhereInput>(tagQueryArgs.search);
         const sortQuery = this.parseSortQuery(tagQueryArgs.sort);
 

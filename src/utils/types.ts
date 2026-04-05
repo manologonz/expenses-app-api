@@ -148,4 +148,5 @@ export type UserQueryArgs = {
 export type TagQueryArgs = {
     search?: string;
     sort?: string;
+    depth?: string;
 };
