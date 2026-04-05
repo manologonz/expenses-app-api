@@ -62,7 +62,7 @@ model Expense {
 model Tag {
     id        Int       @id @default(autoincrement())
     name      String    @db.VarChar(255)
-    color     String    @db.VarChar(255)
+    color     String?   @db.VarChar(255)
     slug      String    @db.VarChar(255)
     expenses  Expense[]
     createdAt DateTime  @default(now())

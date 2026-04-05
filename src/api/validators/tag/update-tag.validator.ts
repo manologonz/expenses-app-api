@@ -33,7 +33,7 @@ export default checkSchema({
     color: {
         optional: true,
         exists: {
-            errorMessage: requiredMessage('name'),
+            errorMessage: requiredMessage('color'),
         },
         isHexColor: {
             errorMessage: hexColorMessage('color'),

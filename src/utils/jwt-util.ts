@@ -12,7 +12,6 @@ import jwt, { SignOptions, TokenExpiredError, Algorithm } from 'jsonwebtoken';
 import dayjs, { ManipulateType } from 'dayjs';
 import { Request } from 'express';
 import UserMapper from '../api/mappers/user.mapper';
-import { User } from '../../generated/prisma';
 
 export class JwtUtil {
     private accessTokenExpiration: JwtExpiration;
